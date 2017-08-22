@@ -55,3 +55,21 @@ var getCrossingPoint = function(a1,b1,c1,a2,b2,c2) {
 
     return new Point(X, Y);
 };
+
+var rotatePoint = function(x, y, ox, oy, angle) {
+    var s = Math.sin(deg2rad(angle));
+    var c = Math.cos(deg2rad(angle));
+
+    return {
+        x: Math.ceil(ox + x * c),
+        y: Math.ceil(oy - y * s)
+    };
+}
+
+var deg2rad = function (deg) {
+    return (Math.PI / 180) * deg;
+}
+
+var getRandomArbitrary = function(min, max) {
+    return Math.floor(Math.random() * (max - min) + min);
+}
