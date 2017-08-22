@@ -1,19 +1,20 @@
 function initPlayer() {
     player = {
-        x: cw2,
-        y: 70,
+        x: 273,
+        y: 367,
         radius: 10,
         pov_radius: function () {
             return canvas.width + canvas.height;
         },
-        pov_angle: -90,
+        pov_angle: 90,
         pov: {x: 0, y: 0},
         dir: {x: 0, y: 0},
         fov1: [],
         fov2: [],
         rotate_angle_step: 30,
         fov_angle_h: 40,
-        fov_angle_step: 5
+        fov_angle_step: 1,
+        debug: false
     };
 
     rotatePlayer();
@@ -126,66 +127,64 @@ function calcMapFov() {
 
     player.fov1 = [];
     player.fov2 = [];
-    iterateMapBlocks(function (px1, py1, px2, py2, pxSize) {
+    var playerPoint = new Point(player.x, player.y);
+    var playerPov = new Point(player.pov.x, player.pov.y);
+
+    //tmp vars
+    var fovLine, fovCp, distance, pfv;
+    for (var i in pFovAr1) {
+        var fovPoint1 = new Point(pFovAr1[i].x, pFovAr1[i].y);
+        iterateMapBlocks(function (px1, py1, px2, py2) {
             var p1 = new Point(px1, py1);
             var p2 = new Point(px2, py2);
             var wallLine = lineEquation(p1, p2);
-
-            var playerPoint = new Point(player.x, player.y);
-            var playerPov = new Point(player.pov.x, player.pov.y);
-
-            //tmp vars
-            var fovLine, fovCp, distance, pfv;
-            for (var i in pFovAr1) {
-                var fovPoint1 = new Point(pFovAr1[i].x, pFovAr1[i].y);
-                fovCp   = calcColFov(p1, p2, playerPoint, fovPoint1, wallLine);
-                if(fovCp) {
-                    player.fov1.push(fovCp);
-                    if (player.fov1.length > 0) {
-                        pfv = player.fov1;
-                        for (var n in pfv) {
-                            if (player.fov1[n].fp_x == fovPoint1.X && player.fov1[n].fp_y == fovPoint1.Y) {
-
-                                console.log(fovCp.dist);
-                                console.log(player.fov1[n].dist);
-                                console.log('---next');
-
-                                if (fovCp.dist < player.fov1[n].dist) {
-                                    console.log('---TRUE');
-                                    //player.fov1.splice(0, n); or
-                                    delete player.fov1[n];
-                                }
-                            }
-                        }
-                    }
-                }
+            fovCp = calcColFov(p1, p2, playerPoint, fovPoint1, wallLine);
+            if (fovCp) {
+                player.fov1.push(fovCp);
             }
+        });
+    }
 
-            for (var i in pFovAr2) {
-                var fovPoint2 = new Point(pFovAr2[i].x, pFovAr2[i].y);
-                fovCp   = calcColFov(p1, p2, playerPoint, fovPoint2, wallLine);
-                if(fovCp) {
-                    player.fov2.push(fovCp);
-                }
+    for (var i in pFovAr2) {
+        var fovPoint1 = new Point(pFovAr2[i].x, pFovAr2[i].y);
+        iterateMapBlocks(function (px1, py1, px2, py2) {
+            var p1 = new Point(px1, py1);
+            var p2 = new Point(px2, py2);
+            var wallLine = lineEquation(p1, p2);
+            fovCp = calcColFov(p1, p2, playerPoint, fovPoint1, wallLine);
+            if (fovCp) {
+                player.fov2.push(fovCp);
             }
+        });
+    }
 
-            if (isCrossing(p1, p2, playerPoint, playerPov)) {
-                fovLine = lineEquation(playerPoint, playerPov);
-                fovCp = getCrossingPoint(
-                    wallLine.A,
-                    wallLine.B,
-                    wallLine.C,
-                    fovLine.A,
-                    fovLine.B,
-                    fovLine.C
-                );
+    player.fov1.sort(function (a, b) {
+        return a.dist - b.dist;
+    });
 
+    player.fov2.sort(function (a, b) {
+        return a.dist - b.dist;
+    });
 
-                player.pov.x = fovCp.X;
-                player.pov.y = fovCp.Y;
-            }
-        }
-    );
+    player.fov1 = player.fov1.slice(0, pFovAr1.length - 1);
+    player.fov2 = player.fov2.slice(0, pFovAr2.length - 1);
+
+    //if (isCrossing(p1, p2, playerPoint, playerPov)) {
+    //    fovLine = lineEquation(playerPoint, playerPov);
+    //    fovCp = getCrossingPoint(
+    //        wallLine.A,
+    //        wallLine.B,
+    //        wallLine.C,
+    //        fovLine.A,
+    //        fovLine.B,
+    //        fovLine.C
+    //    );
+    //
+    //
+    //    player.pov.x = fovCp.X;
+    //    player.pov.y = fovCp.Y;
+    //}
+
 }
 
 function rotatePlayer() {
@@ -215,6 +214,14 @@ function drawPlayer() {
     for (var i in player.fov1) {
         ctx.moveTo(player.x, player.y);
         ctx.lineTo(player.fov1[i].x, player.fov1[i].y);
+
+        // DEBUG
+        if(player.debug) {
+
+            ctx.fillStyle = 'red';
+            ctx.fillText(player.fov1[i].x+','+ player.fov1[i].y, player.fov1[i].x+13, player.fov1[i].y+13);
+            ctx.fillStyle = 'green';
+        }
     }
     ctx.stroke();
 
@@ -222,6 +229,13 @@ function drawPlayer() {
     for (var i in player.fov2) {
         ctx.moveTo(player.x, player.y);
         ctx.lineTo(player.fov2[i].x, player.fov2[i].y);
+
+        if(player.debug) {
+            ctx.fillStyle = 'red';
+            ctx.fillText(player.fov2[i].x+','+ player.fov2[i].y, player.fov2[i].x+13, player.fov2[i].y+13);
+            ctx.fillStyle = 'green';
+        }
+
     }
     ctx.stroke();
     //player pov
