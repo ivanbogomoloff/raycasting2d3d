@@ -2,17 +2,22 @@ function initMap() {
     map = [
         // ROOM WALLS
         //  x1  y1  x2    y2
-        0, 0, canvas.width, 0,
-        0, 0, 0, canvas.height,
-        canvas.width, 0, canvas.width, canvas.height,
-        0, canvas.height, canvas.width, canvas.height,
+        0, 0, mapSize.w, 0,
+        0, 0, 0, mapSize.h,
+        mapSize.w, 0, mapSize.h, mapSize.h,
+        0, mapSize.h, mapSize.w, mapSize.h,
         // ROOM WALLS LIKE THINGS
-        cw2 - 100, ch2 - 100, cw2 + 100, ch2 - 100,
-        cw2 + 100, ch2 - 100, cw2 + 100, ch2 + 20,
-        cw2 + 100, ch2 + 20, cw2 - 100, ch2 - 100,
+        mapSize.w2 - 100, mapSize.h2 - 100, mapSize.w2 + 100, mapSize.h2 - 100,
+        mapSize.w2 + 100, mapSize.h2 - 100, mapSize.w2 + 100, mapSize.h2 + 20,
+        mapSize.w2 + 100, mapSize.h2+ 20, mapSize.w2 - 100, mapSize.h2 - 100,
         // ROOM WALL DIAGONAL
-        //cw2 - 200, ch2 + 30, cw2 , ch2 + 140, 20
     ];
+
+    for(var i in map) {
+        if(map[i] != 0) {
+            map[i] = map[i] * mapRatio.wh;
+        }
+    }
 }
 
 function iterateMapBlocks(func) {

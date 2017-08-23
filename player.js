@@ -1,10 +1,10 @@
 function initPlayer() {
     player = {
-        x: 296,
-        y: 44,
-        radius: 10,
+        x: 296 * mapRatio.wh,
+        y: 44 * mapRatio.wh,
+        radius: 10 * mapRatio.wh,
         pov_radius: function () {
-            return canvas.width + canvas.height;
+            return mapSize.w + mapSize.h;
         },
         pov_angle: -90,
         pov: {x: 0, y: 0},
@@ -23,8 +23,8 @@ function initPlayer() {
 
 function movePlayerForward() {
     var rp = rotatePoint(
-        10,
-        10,
+        10 * mapRatio.wh,
+        10 * mapRatio.wh,
         player.x,
         player.y,
         player.pov_angle

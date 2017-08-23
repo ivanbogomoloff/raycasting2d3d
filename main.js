@@ -6,6 +6,8 @@ var canvas,
     logNum = 1,
     size = 4,
     player,
+    mapSize = {w: 800, h: 800, w2: 400, h2: 400},
+    mapRatio = {w: 1, h: 1, wh: 1},
     enableHide = true,
     enableConsole = true;
 
@@ -32,6 +34,14 @@ function initCanvas() {
     ctx = canvas.getContext('2d');
     cw2 = canvas.width / 2;
     ch2 = canvas.height / 2;
+
+    mapRatio.w = canvas.width / mapSize.w;
+    mapRatio.h = canvas.height / mapSize.h;
+    mapRatio.wh = canvas.width / mapSize.w;
+
+    mapSize.w2  = mapSize.w / 2;
+    mapSize.h2  = mapSize.h / 2;
+
 }
 
 function log(msg, color) {
