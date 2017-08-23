@@ -20,13 +20,23 @@ function initPlayer() {
         rotate_angle_step: 30,
         fov_angle_h: 40,
         fov_angle_step: 7,
-        debug: false
+        debug: false,
+        is_collide: {
+            f: false,
+            b: false
+        }
     };
 
     rotatePlayer();
 }
 
 function movePlayerForward() {
+    console.log(player.is_collide.f);
+
+    if(player.is_collide.f) {
+        return false;
+    }
+
     var rp = rotatePoint(
         10 * mapRatio.wh,
         10 * mapRatio.wh,
@@ -256,10 +266,16 @@ function calcMapFov() {
             }
         }
     }
+}
 
+function calcMapCollideByPov() {
 
-
-
+    if(Math.abs(player.pov.x - player.x) <= player.radius) {
+        player.is_collide.f = true;
+    }
+    else {
+        player.is_collide.f = false;
+    }
 }
 
 function rotatePlayer() {
@@ -269,6 +285,7 @@ function rotatePlayer() {
     calcFov();
     calcMapFov();
 
+    calcMapCollideByPov();
     //log('player pov: ' + player.pov.x + ' ' + player.pov.y);
 }
 
