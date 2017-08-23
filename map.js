@@ -9,6 +9,7 @@ function initMap() {
         // ROOM WALLS LIKE THINGS
         cw2 - 100, ch2 - 100, cw2 + 100, ch2 - 100,
         cw2 + 100, ch2 - 100, cw2 + 100, ch2 + 20,
+        cw2 + 100, ch2 + 20, cw2 - 100, ch2 - 100,
         // ROOM WALL DIAGONAL
         //cw2 - 200, ch2 + 30, cw2 , ch2 + 140, 20
     ];
