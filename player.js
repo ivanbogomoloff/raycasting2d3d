@@ -1,19 +1,19 @@
 function initPlayer() {
     player = {
-        x: 273,
-        y: 367,
+        x: 296,
+        y: 44,
         radius: 10,
         pov_radius: function () {
             return canvas.width + canvas.height;
         },
-        pov_angle: 90,
+        pov_angle: -90,
         pov: {x: 0, y: 0},
         dir: {x: 0, y: 0},
         fov1: [],
         fov2: [],
         rotate_angle_step: 30,
         fov_angle_h: 40,
-        fov_angle_step: 1,
+        fov_angle_step: 7,
         debug: false
     };
 
@@ -129,18 +129,18 @@ function calcMapFov() {
     player.fov2 = [];
     var playerPoint = new Point(player.x, player.y);
     var playerPov = new Point(player.pov.x, player.pov.y);
-
+    var rayPoint;
     //tmp vars
-    var fovLine, fovCp, distance, pfv;
+    var fovLine, crossPoint, distance, pfv;
     for (var i in pFovAr1) {
-        var fovPoint1 = new Point(pFovAr1[i].x, pFovAr1[i].y);
+        rayPoint = new Point(pFovAr1[i].x, pFovAr1[i].y);
         iterateMapBlocks(function (px1, py1, px2, py2) {
             var p1 = new Point(px1, py1);
             var p2 = new Point(px2, py2);
             var wallLine = lineEquation(p1, p2);
-            fovCp = calcColFov(p1, p2, playerPoint, fovPoint1, wallLine);
-            if (fovCp) {
-                player.fov1.push(fovCp);
+            crossPoint = calcColFov(p1, p2, playerPoint, rayPoint, wallLine);
+            if (crossPoint) {
+                player.fov1.push(crossPoint);
             }
         });
     }
@@ -151,9 +151,9 @@ function calcMapFov() {
             var p1 = new Point(px1, py1);
             var p2 = new Point(px2, py2);
             var wallLine = lineEquation(p1, p2);
-            fovCp = calcColFov(p1, p2, playerPoint, fovPoint1, wallLine);
-            if (fovCp) {
-                player.fov2.push(fovCp);
+            crossPoint = calcColFov(p1, p2, playerPoint, fovPoint1, wallLine);
+            if (crossPoint) {
+                player.fov2.push(crossPoint);
             }
         });
     }
@@ -166,8 +166,28 @@ function calcMapFov() {
         return a.dist - b.dist;
     });
 
-    player.fov1 = player.fov1.slice(0, pFovAr1.length - 1);
-    player.fov2 = player.fov2.slice(0, pFovAr2.length - 1);
+
+    for(var i = 0; i < player.fov1.length; i++) {
+        var cur = player.fov1[i];
+        console.log(cur);
+        for(var n = i + 1; n < player.fov1.length; n++) {
+            var cur2 = player.fov1[n];
+            if(cur2 && cur && cur2.fp_x == cur.fp_x && cur2.fp_y == cur.fp_y) {
+                delete  player.fov1[n];
+            }
+        }
+    }
+
+    for(var i = 0; i < player.fov2.length; i++) {
+        var cur = player.fov2[i];
+        for(var n = i + 1; n < player.fov2.length; n++) {
+            var cur2 = player.fov2[n];
+            if(cur2 && cur && cur2.fp_x == cur.fp_x && cur2.fp_y == cur.fp_y) {
+                delete  player.fov2[n];
+            }
+        }
+    }
+
 
     //if (isCrossing(p1, p2, playerPoint, playerPov)) {
     //    fovLine = lineEquation(playerPoint, playerPov);
