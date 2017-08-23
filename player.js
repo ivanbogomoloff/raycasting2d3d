@@ -6,9 +6,14 @@ function initPlayer() {
         pov_radius: function () {
             return mapSize.w + mapSize.h;
         },
+        //FRONT-FORWARD POV
         pov_angle: -90,
         pov: {x: 0, y: 0},
         pov_ar: [],
+        //BACK-BACKWORD POV
+        pov_back_angle: 90,
+        pov_back: {x: 0, y: 0},
+        pov_back_ar: [],
         dir: {x: 0, y: 0},
         fov1: [],
         fov2: [],
@@ -59,6 +64,19 @@ function calcPov() {
     //point of view
     player.pov.x = rp.x;
     player.pov.y = rp.y;
+}
+
+function calcBackPov() {
+    var rp = rotatePoint(
+        player.pov_radius(),
+        player.pov_radius(),
+        player.x,
+        player.y,
+        player.pov_back_angle
+    );
+    //point of view
+    player.pov_back.x = rp.x;
+    player.pov_back.y = rp.y;
 }
 
 function calcDir() {
@@ -126,10 +144,12 @@ function calcMapFov() {
     var pFovAr1 = player.fov1;
     var pFovAr2 = player.fov2;
     player.pov_ar = [];
+    player.pov_back_ar = [];
     player.fov1 = [];
     player.fov2 = [];
     var playerPoint = new Point(player.x, player.y);
     var playerPov = new Point(player.pov.x, player.pov.y);
+    var playerPovBack = new Point(player.pov_back.x, player.pov_back.y);
     var rayPoint;
     //tmp vars
     var fovLine, crossPoint, distance, pfv;
@@ -144,6 +164,7 @@ function calcMapFov() {
                 player.fov1.push(crossPoint);
             }
 
+            // FORWARD-FRONT POV
             if (isCrossing(p1, p2, playerPoint, playerPov)) {
                 fovLine = lineEquation(playerPoint, playerPov);
                 fovCp = getCrossingPoint(
@@ -156,6 +177,25 @@ function calcMapFov() {
                 );
 
                 player.pov_ar.push({
+                    x: fovCp.X,
+                    y: fovCp.Y,
+                    dist:  Math.abs(fovCp.X - playerPoint.X) + Math.abs(fovCp.Y - playerPoint.Y)
+                });
+            }
+
+            // BACKWARD-BACK POV
+            if (isCrossing(p1, p2, playerPoint, playerPovBack)) {
+                fovLine = lineEquation(playerPoint, playerPovBack);
+                fovCp = getCrossingPoint(
+                    wallLine.A,
+                    wallLine.B,
+                    wallLine.C,
+                    fovLine.A,
+                    fovLine.B,
+                    fovLine.C
+                );
+
+                player.pov_back_ar.push({
                     x: fovCp.X,
                     y: fovCp.Y,
                     dist:  Math.abs(fovCp.X - playerPoint.X) + Math.abs(fovCp.Y - playerPoint.Y)
@@ -181,6 +221,11 @@ function calcMapFov() {
         return a.dist - b.dist;
     });
 
+    player.pov_back_ar.sort(function (a, b) {
+        return a.dist - b.dist;
+    });
+
+    player.pov_back = player.pov_back_ar[0];
     player.pov = player.pov_ar[0];
 
     player.fov1.sort(function (a, b) {
@@ -219,6 +264,7 @@ function calcMapFov() {
 
 function rotatePlayer() {
     calcPov();
+    calcBackPov();
     calcDir();
     calcFov();
     calcMapFov();
@@ -273,6 +319,11 @@ function drawPlayer() {
     ctx.beginPath();
     ctx.moveTo(player.x, player.y);
     ctx.lineTo(player.pov.x, player.pov.y);
+    ctx.stroke();
+    //player back pov
+    ctx.beginPath();
+    ctx.moveTo(player.x, player.y);
+    ctx.lineTo(player.pov_back.x, player.pov_back.y);
     ctx.stroke();
 
 }

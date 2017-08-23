@@ -1,4 +1,5 @@
 function initEvents() {
+
     document.getElementById('f').addEventListener('click', function () {
         movePlayerForward();
         rotatePlayer();
@@ -28,8 +29,13 @@ function initEvents() {
         //left
         if (e.keyCode == 37) {
             player.pov_angle += player.rotate_angle_step;
+            player.pov_back_angle += player.rotate_angle_step;
             if (player.pov_angle >= 360) {
                 player.pov_angle = 0;
+            }
+
+            if (player.pov_back_angle >= 360) {
+                player.pov_back_angle = 0;
             }
 
             rotatePlayer();
@@ -38,8 +44,12 @@ function initEvents() {
         // right
         else if (e.keyCode == 39) {
             player.pov_angle -= player.rotate_angle_step;
+            player.pov_back_angle -= player.rotate_angle_step;
             if (player.pov_angle <= -360) {
                 player.pov_angle = 0;
+            }
+            if (player.pov_back_angle <= -360) {
+                player.pov_back_angle = 0;
             }
             rotatePlayer();
             render();
