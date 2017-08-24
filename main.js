@@ -6,7 +6,7 @@ var canvas,
     logNum = 1,
     size = 4,
     player,
-    mapSize = {w: 800, h: 800, w2: 400, h2: 400},
+    mapSize = {w: 800, h: 600, w2: 400, h2: 400},
     mapRatio = {w: 1, h: 1, wh: 1},
     enableHide = true,
     enableConsole = true;

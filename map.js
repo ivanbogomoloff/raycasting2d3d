@@ -1,23 +1,18 @@
 function initMap() {
+    console.log(mapSize);
     map = [
         // ROOM WALLS
         //  x1  y1  x2    y2
-        0, 0, mapSize.w, 0,
-        0, 0, 0, mapSize.h,
-        mapSize.w, 0, mapSize.h, mapSize.h,
-        0, mapSize.h, mapSize.w, mapSize.h,
+        0, 0, mapSize.w * mapRatio.w, 0,
+        0, 0, 0, mapSize.h * mapRatio.h,
+        mapSize.w * mapRatio.w, 0, mapSize.w * mapRatio.w, mapSize.h * mapRatio.h,
+        0, mapSize.h * mapRatio.h , mapSize.w * mapRatio.w, mapSize.h * mapRatio.h,
         // ROOM WALLS LIKE THINGS
-        mapSize.w2 - 100, mapSize.h2 - 100, mapSize.w2 + 100, mapSize.h2 - 100,
-        mapSize.w2 + 100, mapSize.h2 - 100, mapSize.w2 + 100, mapSize.h2 + 20,
-        mapSize.w2 + 100, mapSize.h2+ 20, mapSize.w2 - 100, mapSize.h2 - 100,
+        mapSize.w2 * mapRatio.w - 100, mapSize.h2 * mapRatio.h - 100, mapSize.w2 * mapRatio.w + 100, mapSize.h2 * mapRatio.h - 100,
+        mapSize.w2 * mapRatio.w + 100, mapSize.h2 * mapRatio.h - 100, mapSize.w2 * mapRatio.w + 100, mapSize.h2 * mapRatio.h + 20,
+        mapSize.w2 * mapRatio.w + 100, mapSize.h2 * mapRatio.h + 20, mapSize.w2 * mapRatio.w - 100, mapSize.h2 * mapRatio.h - 100,
         // ROOM WALL DIAGONAL
     ];
-
-    for(var i in map) {
-        if(map[i] != 0) {
-            map[i] = map[i] * mapRatio.wh;
-        }
-    }
 }
 
 function iterateMapBlocks(func) {

@@ -33,7 +33,7 @@ function initPlayer() {
 function movePlayerForward() {
     console.log(player.is_collide.f);
 
-    if(player.is_collide.f) {
+    if (player.is_collide.f) {
         return false;
     }
 
@@ -84,9 +84,11 @@ function calcBackPov() {
         player.y,
         player.pov_back_angle
     );
+    
     //point of view
     player.pov_back.x = rp.x;
     player.pov_back.y = rp.y;
+
 }
 
 function calcDir() {
@@ -189,7 +191,7 @@ function calcMapFov() {
                 player.pov_ar.push({
                     x: fovCp.X,
                     y: fovCp.Y,
-                    dist:  Math.abs(fovCp.X - playerPoint.X) + Math.abs(fovCp.Y - playerPoint.Y)
+                    dist: Math.abs(fovCp.X - playerPoint.X) + Math.abs(fovCp.Y - playerPoint.Y)
                 });
             }
 
@@ -208,7 +210,7 @@ function calcMapFov() {
                 player.pov_back_ar.push({
                     x: fovCp.X,
                     y: fovCp.Y,
-                    dist:  Math.abs(fovCp.X - playerPoint.X) + Math.abs(fovCp.Y - playerPoint.Y)
+                    dist: Math.abs(fovCp.X - playerPoint.X) + Math.abs(fovCp.Y - playerPoint.Y)
                 });
             }
         });
@@ -247,21 +249,21 @@ function calcMapFov() {
     });
 
 
-    for(var i = 0; i < player.fov1.length; i++) {
+    for (var i = 0; i < player.fov1.length; i++) {
         var cur = player.fov1[i];
-        for(var n = i + 1; n < player.fov1.length; n++) {
+        for (var n = i + 1; n < player.fov1.length; n++) {
             var cur2 = player.fov1[n];
-            if(cur2 && cur && cur2.fp_x == cur.fp_x && cur2.fp_y == cur.fp_y) {
+            if (cur2 && cur && cur2.fp_x == cur.fp_x && cur2.fp_y == cur.fp_y) {
                 delete  player.fov1[n];
             }
         }
     }
 
-    for(var i = 0; i < player.fov2.length; i++) {
+    for (var i = 0; i < player.fov2.length; i++) {
         var cur = player.fov2[i];
-        for(var n = i + 1; n < player.fov2.length; n++) {
+        for (var n = i + 1; n < player.fov2.length; n++) {
             var cur2 = player.fov2[n];
-            if(cur2 && cur && cur2.fp_x == cur.fp_x && cur2.fp_y == cur.fp_y) {
+            if (cur2 && cur && cur2.fp_x == cur.fp_x && cur2.fp_y == cur.fp_y) {
                 delete  player.fov2[n];
             }
         }
@@ -269,8 +271,40 @@ function calcMapFov() {
 }
 
 function calcMapCollideByPov() {
+    var collideRad = 29;
+    //
+    if (player.pov.x - player.x == 0) {
+        if (Math.abs(player.pov.y - player.y) <= collideRad) {
+            player.is_collide.f = true;
+        }
+        else {
+            player.is_collide.f = false;
+        }
+    }
+    else if (
+        Math.abs(player.pov.x - player.x) + Math.abs(player.pov.y - player.y) <= collideRad
+    ) {
+        player.is_collide.f = true;
+    }
+    else {
+        player.is_collide.f = false;
+    }
+}
 
-    if(Math.abs(player.pov.x - player.x) <= player.radius) {
+function calcMapCollideByPovBack() {
+    var collideRad = 29;
+    //
+    if (player.pov_back.x - player.x == 0) {
+        if (Math.abs(player.pov_back.y - player.y) <= collideRad) {
+            player.is_collide.f = true;
+        }
+        else {
+            player.is_collide.f = false;
+        }
+    }
+    else if (
+        Math.abs(player.pov_back.x - player.x) + Math.abs(player.pov_back.y - player.y) <= collideRad
+    ) {
         player.is_collide.f = true;
     }
     else {
@@ -286,6 +320,7 @@ function rotatePlayer() {
     calcMapFov();
 
     calcMapCollideByPov();
+    calcMapCollideByPovBack();
     //log('player pov: ' + player.pov.x + ' ' + player.pov.y);
 }
 
@@ -309,10 +344,10 @@ function drawPlayer() {
         ctx.lineTo(player.fov1[i].x, player.fov1[i].y);
 
         // DEBUG
-        if(player.debug) {
+        if (player.debug) {
 
             ctx.fillStyle = 'red';
-            ctx.fillText(player.fov1[i].x+','+ player.fov1[i].y, player.fov1[i].x+13, player.fov1[i].y+13);
+            ctx.fillText(player.fov1[i].x + ',' + player.fov1[i].y, player.fov1[i].x + 13, player.fov1[i].y + 13);
             ctx.fillStyle = 'green';
         }
     }
@@ -323,9 +358,9 @@ function drawPlayer() {
         ctx.moveTo(player.x, player.y);
         ctx.lineTo(player.fov2[i].x, player.fov2[i].y);
 
-        if(player.debug) {
+        if (player.debug) {
             ctx.fillStyle = 'red';
-            ctx.fillText(player.fov2[i].x+','+ player.fov2[i].y, player.fov2[i].x+13, player.fov2[i].y+13);
+            ctx.fillText(player.fov2[i].x + ',' + player.fov2[i].y, player.fov2[i].x + 13, player.fov2[i].y + 13);
             ctx.fillStyle = 'green';
         }
 
