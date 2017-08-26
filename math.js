@@ -8,7 +8,7 @@ var isCrossing = function(p1, p2, p3, p4) {
     var v3 = vectorMulti(p2.X - p1.X, p2.Y - p1.Y, p3.X - p1.X, p3.Y - p1.Y);
     var v4 = vectorMulti(p2.X - p1.X, p2.Y - p1.Y, p4.X - p1.X, p4.Y - p1.Y);
 
-    return !!((v1*v2)<0 && (v3*v4)<0);
+    return (v1*v2)<0 && (v3*v4)<0;
 };
 
 /**

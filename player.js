@@ -41,13 +41,6 @@ function initPlayer() {
 }
 
 function movePlayerForward() {
-    calcMapCollideByPov();
-
-    if (player.is_collide.f) {
-        return false;
-    }
-
-
     if(player.speed.b >= player.accel.b) {
         player.center.x = player.x;
         player.center.y = player.y;
@@ -64,19 +57,24 @@ function movePlayerForward() {
         player.pov_angle
     );
 
+    var playerX = player.x;
+    var playerY = player.y;
     player.x = rp.x;
     player.y = rp.y;
+
+    calcMapCollideByPov();
+    if (player.is_collide.f) {
+        player.x = playerX;
+        player.y = playerY;
+        player.speed.f -= player.accel.f;
+
+        return false;
+    }
 
     rotatePlayer();
 }
 
 function movePlayerBackward() {
-    calcMapCollideByPovBack();
-
-    if (player.is_collide.b) {
-        return false;
-    }
-
     if(player.speed.f >= player.accel.f) {
         player.center.x = player.x;
         player.center.y = player.y;
@@ -92,6 +90,18 @@ function movePlayerBackward() {
         player.center.y,
         player.pov_angle + 180
     );
+
+    var playerX = player.x;
+    var playerY = player.y;
+    calcMapCollideByPovBack();
+
+    if (player.is_collide.b) {
+        player.x = playerX;
+        player.y = playerY;
+        player.speed.b -= player.accel.b;
+
+        return false;
+    }
 
     player.x = rp.x;
     player.y = rp.y;
