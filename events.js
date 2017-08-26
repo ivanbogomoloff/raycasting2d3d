@@ -38,7 +38,7 @@ function initEvents() {
                 player.pov_back_angle = 0;
             }
 
-            rotatePlayer();
+            rotatePlayer(true);
             render();
         }
         // right
@@ -51,18 +51,16 @@ function initEvents() {
             if (player.pov_back_angle <= -360) {
                 player.pov_back_angle = 0;
             }
-            rotatePlayer();
+            rotatePlayer(true);
             render();
         }
         // up-forward
         else if (e.keyCode == 38) {
             movePlayerForward();
-            rotatePlayer();
             render();
         }
         else if (e.keyCode == 40) {
             movePlayerBackward();
-            rotatePlayer();
             render();
         }
         //console.log(e.keyCode);

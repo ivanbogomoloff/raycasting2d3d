@@ -61,8 +61,8 @@ var rotatePoint = function(x, y, ox, oy, angle) {
     var c = Math.cos(deg2rad(angle));
 
     return {
-        x: Math.ceil(ox + x * c),
-        y: Math.ceil(oy - y * s)
+        x: Math.floor(ox + x * c),
+        y: Math.floor(oy - y * s)
     };
 }
 

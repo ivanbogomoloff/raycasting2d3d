@@ -3,6 +3,7 @@ function initPlayer() {
         x: 296 * mapRatio.wh,
         y: 44 * mapRatio.wh,
         radius: 10 * mapRatio.wh,
+        collide_radius: (10 * mapRatio.wh) * 2,
         pov_radius: function () {
             return mapSize.w + mapSize.h;
         },
@@ -24,46 +25,85 @@ function initPlayer() {
         is_collide: {
             f: false,
             b: false
-        }
+        },
+        speed: {
+            f: 10,
+            b: 10
+        },
+        accel: {
+            f: 10,
+            b: 10
+        },
+        center: {x: false, y: false}
     };
 
     rotatePlayer();
 }
 
 function movePlayerForward() {
-    console.log(player.is_collide.f);
+    calcMapCollideByPov();
 
     if (player.is_collide.f) {
         return false;
     }
 
+
+    if(player.speed.b >= player.accel.b) {
+        player.center.x = player.x;
+        player.center.y = player.y;
+        player.speed.b = 0;
+    }
+
+    player.speed.f += player.accel.f;
+
     var rp = rotatePoint(
-        10 * mapRatio.wh,
-        10 * mapRatio.wh,
-        player.x,
-        player.y,
+        player.speed.f,
+        player.speed.f,
+        player.center.x,
+        player.center.y,
         player.pov_angle
     );
 
     player.x = rp.x;
     player.y = rp.y;
+
+    rotatePlayer();
 }
 
 function movePlayerBackward() {
+    calcMapCollideByPovBack();
+
+    if (player.is_collide.b) {
+        return false;
+    }
+
+    if(player.speed.f >= player.accel.f) {
+        player.center.x = player.x;
+        player.center.y = player.y;
+        player.speed.f = 0;
+    }
+
+    player.speed.b += player.accel.b;
+
     var rp = rotatePoint(
-        10,
-        10,
-        player.x,
-        player.y,
+        player.speed.b,
+        player.speed.b,
+        player.center.x,
+        player.center.y,
         player.pov_angle + 180
     );
 
     player.x = rp.x;
     player.y = rp.y;
+
+    rotatePlayer();
 }
 
 
 function calcPov() {
+
+    player.pov = {x: 0, y: 0};
+
     var rp = rotatePoint(
         player.pov_radius(),
         player.pov_radius(),
@@ -72,8 +112,11 @@ function calcPov() {
         player.pov_angle
     );
     //point of view
-    player.pov.x = rp.x;
-    player.pov.y = rp.y;
+    if (rp) {
+        player.pov.x = rp.x;
+        player.pov.y = rp.y;
+    }
+
 }
 
 function calcBackPov() {
@@ -84,7 +127,7 @@ function calcBackPov() {
         player.y,
         player.pov_back_angle
     );
-    
+
     //point of view
     player.pov_back.x = rp.x;
     player.pov_back.y = rp.y;
@@ -164,7 +207,7 @@ function calcMapFov() {
     var playerPovBack = new Point(player.pov_back.x, player.pov_back.y);
     var rayPoint;
     //tmp vars
-    var fovLine, crossPoint, distance, pfv;
+    var fovLine, crossPoint, distance, fovCp;
     for (var i in pFovAr1) {
         rayPoint = new Point(pFovAr1[i].x, pFovAr1[i].y);
         iterateMapBlocks(function (px1, py1, px2, py2) {
@@ -237,8 +280,14 @@ function calcMapFov() {
         return a.dist - b.dist;
     });
 
-    player.pov_back = player.pov_back_ar[0];
-    player.pov = player.pov_ar[0];
+    if (player.pov_back_ar.length > 0) {
+        player.pov_back = player.pov_back_ar[0];
+    }
+
+    if (player.pov_ar.length > 0) {
+        player.pov = player.pov_ar[0];
+    }
+
 
     player.fov1.sort(function (a, b) {
         return a.dist - b.dist;
@@ -271,56 +320,26 @@ function calcMapFov() {
 }
 
 function calcMapCollideByPov() {
-    var collideRad = 29;
-    //
-    if (player.pov.x - player.x == 0) {
-        if (Math.abs(player.pov.y - player.y) <= collideRad) {
-            player.is_collide.f = true;
-        }
-        else {
-            player.is_collide.f = false;
-        }
-    }
-    else if (
-        Math.abs(player.pov.x - player.x) + Math.abs(player.pov.y - player.y) <= collideRad
-    ) {
-        player.is_collide.f = true;
-    }
-    else {
-        player.is_collide.f = false;
-    }
+    player.is_collide.f = (Math.abs(player.pov.x - player.x) + Math.abs(player.pov.y - player.y)) <= player.collide_radius;
 }
 
 function calcMapCollideByPovBack() {
-    var collideRad = 29;
-    //
-    if (player.pov_back.x - player.x == 0) {
-        if (Math.abs(player.pov_back.y - player.y) <= collideRad) {
-            player.is_collide.f = true;
-        }
-        else {
-            player.is_collide.f = false;
-        }
-    }
-    else if (
-        Math.abs(player.pov_back.x - player.x) + Math.abs(player.pov_back.y - player.y) <= collideRad
-    ) {
-        player.is_collide.f = true;
-    }
-    else {
-        player.is_collide.f = false;
-    }
+    player.is_collide.b = (Math.abs(player.pov_back.x - player.x) + Math.abs(player.pov_back.y - player.y)) <= player.collide_radius;
 }
 
-function rotatePlayer() {
+function rotatePlayer(createCenterPoint) {
     calcPov();
     calcBackPov();
     calcDir();
     calcFov();
     calcMapFov();
 
-    calcMapCollideByPov();
-    calcMapCollideByPovBack();
+
+    if(createCenterPoint) {
+        player.center = {x: player.x, y: player.y};
+        player.speed.f = 10;
+        player.speed.b = 10;
+    }
     //log('player pov: ' + player.pov.x + ' ' + player.pov.y);
 }
 
