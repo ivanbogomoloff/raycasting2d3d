@@ -7,11 +7,29 @@ function initMap() {
         0, 0, 0, mapSize.h * mapRatio.h,
         mapSize.w * mapRatio.w, 0, mapSize.w * mapRatio.w, mapSize.h * mapRatio.h,
         0, mapSize.h * mapRatio.h , mapSize.w * mapRatio.w, mapSize.h * mapRatio.h,
-        // ROOM WALLS LIKE THINGS
+        // BOX
         mapSize.w2 * mapRatio.w - 100, mapSize.h2 * mapRatio.h - 100, mapSize.w2 * mapRatio.w + 100, mapSize.h2 * mapRatio.h - 100,
         mapSize.w2 * mapRatio.w + 100, mapSize.h2 * mapRatio.h - 100, mapSize.w2 * mapRatio.w + 100, mapSize.h2 * mapRatio.h + 20,
-        mapSize.w2 * mapRatio.w + 100, mapSize.h2 * mapRatio.h + 20, mapSize.w2 * mapRatio.w - 100, mapSize.h2 * mapRatio.h - 100,
-        // ROOM WALL DIAGONAL
+        mapSize.w2 * mapRatio.w + 100, mapSize.h2 * mapRatio.h + 20, mapSize.w2 * mapRatio.w - 100, mapSize.h2 * mapRatio.h + 20,
+        mapSize.w2 * mapRatio.w - 100, mapSize.h2 * mapRatio.h + 20,mapSize.w2 * mapRatio.w - 100, mapSize.h2 * mapRatio.h - 100,
+        // BOX2
+        30 * mapRatio.w , 40 * mapRatio.h, 100 * mapRatio.w, 40 * mapRatio.h,
+        100 * mapRatio.w , 40 * mapRatio.h, 100 * mapRatio.w, 100 * mapRatio.h,
+        100 * mapRatio.w , 100 * mapRatio.h, 30 * mapRatio.w, 100 * mapRatio.h,
+        30 * mapRatio.w , 100 * mapRatio.h, 30 * mapRatio.w, 40 * mapRatio.h,
+        //BOX3
+        30 * mapRatio.w , 140 * mapRatio.h, 100 * mapRatio.w, 140 * mapRatio.h,
+        100 * mapRatio.w , 140 * mapRatio.h, 100 * mapRatio.w, 200 * mapRatio.h,
+        100 * mapRatio.w , 200 * mapRatio.h, 30 * mapRatio.w, 200 * mapRatio.h,
+        30 * mapRatio.w , 200 * mapRatio.h, 30 * mapRatio.w, 140 * mapRatio.h,
+
+        //BOX4
+        130 * mapRatio.w , 140 * mapRatio.h, 200 * mapRatio.w, 140 * mapRatio.h,
+        200 * mapRatio.w , 140 * mapRatio.h, 200 * mapRatio.w, 200 * mapRatio.h,
+        200 * mapRatio.w , 200 * mapRatio.h, 130 * mapRatio.w, 200 * mapRatio.h,
+        130 * mapRatio.w , 200 * mapRatio.h, 130 * mapRatio.w, 140 * mapRatio.h,
+        //BOX5
+        100 * mapRatio.w, 400 * mapRatio.h, 500 * mapRatio.w, 400 * mapRatio.h
     ];
 }
 
