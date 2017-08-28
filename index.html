@@ -5,6 +5,7 @@
 		body {
 			padding: 0;
 			margin: 0;
+            background: #000;
 		}
 		canvas {
 			padding: 0;
@@ -94,11 +95,9 @@
 		}
 
 		compileMap();
-		console.log(map);
-		ctx.clearRect(0, 0, canvas.width, canvas.height);
 
 		function drawMapGrid() {
-			ctx.strokeStyle = ctx.fillStyle = '#000';
+			ctx.strokeStyle = ctx.fillStyle = '#005214';
 			ctx.beginPath();
 			for (var i in map.compiled) {
 
@@ -227,10 +226,9 @@
 			}
 		}
 
-		drawMapGrid();
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
 		drawMapTextures();
-
-
+        drawMapGrid();
 	};
 
 	tileset.onload = function() {
