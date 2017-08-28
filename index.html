@@ -9,7 +9,7 @@
 		canvas {
 			padding: 0;
 			margin: 10px auto;
-			width: 100%;
+			border: 1px solid black;
 		}
 	</style>
 </head>
@@ -142,44 +142,7 @@
 			var offsetX = 0;
 			var offsetY = 0;
 
-			if(bitMask == 192 && map_i == 0 && map_j == 0) {
-				offsetX = cell.x;
-			}
-			else if(bitMask == 192 ) {
-				offsetX = cell.x * 3;
-			}
 
-			if(bitMask == 96 && map_i === 0 && map_j == map.source[map_i].length - 1) {
-				offsetX = cell.x * 2;
-			}
-			else if(bitMask == 224 || bitMask == 96) {
-				offsetX = cell.x * 3;
-			}
-
-			if(bitMask == 210 || bitMask == 214 || bitMask == 86) {
-				offsetX = cell.x;
-				offsetY = cell.y;
-			}
-
-			if((bitMask == 22 || bitMask == 6) && map_i == map.source.length - 1 && map_j === 0) {
-				offsetX = 0;
-				offsetY = cell.y;
-			}
-			else if(bitMask == 23 || bitMask == 7 || bitMask == 6) {
-				offsetY = cell.y * 3;
-			}
-
-			if(bitMask == 3 && map_i == map.source.length - 1 && map_j == map.source[map_i].length - 1) {
-				offsetY = cell.y * 2;
-			}
-			else if(bitMask == 3) {
-				offsetY = cell.y * 3;
-			}
-
-			if(bitMask == 75 || bitMask == 107 || bitMask == 106) {
-				offsetX = cell.x * 2;
-				offsetY = cell.y * 2;
-			}
 
 			return {x: offsetX, y: offsetY};
 		}
