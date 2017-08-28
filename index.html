@@ -35,7 +35,7 @@
 				[1, 0, 0, 0, 0, 0, 0, 1],
 				[1, 0, 0, 0, 0, 0, 0, 1],
 				[1, 0, 0, 0, 0, 0, 0, 1],
-				[1, 1, 1, 1, 1, 1, 1, 1]
+				[1, 1, 1, 1, 1, 1, 1, 1],
 			],
             size: 1,
 			compiled: []
@@ -123,24 +123,24 @@
 		function selectTile(h, v) {
             var m = map.source;
             var w = map.types.wall;
-            var bitMask = m[h][v];
+            var bitMask = 0;
             if(m[h-1] == undefined || m[h-1][v] == undefined || m[h-1][v] == w)  {
-                bitMask += 1;
-            }
-
-            if(m[h-1] == undefined || m[h-1][v+1] == undefined || m[h-1][v+1] == w) {
                 bitMask += 2;
             }
 
-            if(m[h][v+1] == undefined || m[h][v+1] == w) {
+            if(m[h-1] == undefined || m[h-1][v+1] == undefined || m[h-1][v+1] == w) {
                 bitMask += 4;
             }
+
+            if(m[h][v+1] == undefined || m[h][v+1] == w) {
+                bitMask += 16;
+            }
             if(m[h+1] == undefined || m[h+1][v+1] == undefined || m[h+1][v+1] == w) {
-                bitMask += 8;
+                bitMask += 128;
             }
 
             if(m[h+1] == undefined || m[h+1][v] == undefined || m[h+1][v] == w) {
-                bitMask += 16;
+                bitMask += 64;
             }
 
             if(m[h+1] == undefined || m[h+1][v-1] == undefined || m[h+1][v-1] == w) {
@@ -148,25 +148,52 @@
             }
 
             if(m[h][v-1]= undefined || m[h][v-1] == w) {
-                bitMask += 64;
+                bitMask += 8;
             }
 
             if(m[h-1] == undefined || m[h-1][v-1] == undefined || m[h-1][v-1] == w) {
-                bitMask += 128;
+                bitMask += 1;
             }
 
 
 			var offsetX = 0;
 			var offsetY = 0;
-            if(bitMask == 184) {
+            //top corner left
+            if(bitMask == 119) {
                 offsetX = cell.x;
             }
-            if(bitMask == 232 || bitMask == 200 || bitMask == 208) {
+            //top wall
+            if(bitMask == 31 || bitMask == 63 || bitMask == 159) {
                 offsetX = cell.x * 3;
             }
-            if(bitMask == 224) {
+            //top corner right
+            if(bitMask == 223) {
                 offsetX = cell.x * 2;
             }
+            //bottom left corner
+            if(bitMask == 242) {
+                offsetY = cell.y;
+            }
+            //bottom right corner
+            if(bitMask == 254) {
+                offsetY = cell.y * 2;
+            }
+            //bottom wall
+            if(bitMask == 249 || bitMask == 248 || bitMask == 252) {
+                offsetY = cell.y * 3;
+            }
+            //right wall
+            if(bitMask == 102 || bitMask == 98 || bitMask == 226) {
+                offsetX = cell.x ;
+                offsetY = cell.y ;
+            }
+            //left wall
+            if(bitMask == 215 || bitMask == 214 || bitMask == 246) {
+                offsetX = cell.x * 2;
+                offsetY = cell.y * 2;
+            }
+
+
 			return {x: offsetX, y: offsetY, i: h, j: v, id: bitMask};
 		}
 
@@ -187,9 +214,13 @@
                 if(tileOffset) {
                     //console.log(tileOffset);
                     ctx.drawImage(tileset, tileOffset.x, tileOffset.y, cell.x, cell.y, p1.moveTo.x, p1.moveTo.y, cell.x, cell.y);
-                    ctx.fillStyle = 'white';
-                    ctx.font = '14px Arial';
-                    ctx.fillText(tileOffset.id, p1.moveTo.x + 14, p1.moveTo.y + 20);
+                    var drawTileId = true;
+                    if(drawTileId) {
+                        ctx.fillStyle = 'white';
+                        ctx.font = '14px Arial';
+                        ctx.fillText(tileOffset.id, p1.moveTo.x + 14, p1.moveTo.y + 20);
+                    }
+
                 }
 
 				n += 4;
