@@ -1,34 +1,209 @@
 <html>
 <head>
-    <meta charset="utf-8"/>
-    <title>3d</title>
-    <style type="text/css">
-        canvas {
-            background: #fff;
-        }
-        body {
-            background: #fff;
-        }
-    </style>
-	<!-- libs -->
-    <script src="math.js"></script>
-
-	<!-- entities -->
-    <script src="grid.js"></script>
-    <script src="map.js"></script>
-    <script src="player.js"></script>
-
-	<!-- RUN -->
-    <script src="events.js"></script>
-    <script src="main.js"></script>
+	<title>Test</title>
+	<style type="text/css">
+		body {
+			padding: 0;
+			margin: 0;
+		}
+		canvas {
+			padding: 0;
+			margin: 10px auto;
+			width: 100%;
+		}
+	</style>
 </head>
-<body onload="main();">
-<canvas width="640" height="480" id="canvas"></canvas>
-<div id="controls">
-    <button id="f">FORWARD</button>
-    <button id="l">LEFT</button>
-    <button id="r">RIGHT</button>
-</div>
-<div id="logger"></div>
+<body>
+<canvas width="512" height="512" id="canvas"></canvas>
+<script type="text/javascript">
+	var tileset = new Image();
+	tileset.src = '20030921.jpg';
+
+	function main() {
+		var canvas = document.getElementById('canvas');
+		var ctx = canvas.getContext('2d');
+		var map = {
+			types: {
+				wall: 0,
+				free: 1
+			},
+			source: [
+				[0, 0, 0, 0, 0, 0, 0, 0],
+				[0, 1, 1, 1, 1, 1, 1, 1],
+				[0, 1, 1, 1, 1, 1, 1, 1],
+				[1, 1, 1, 1, 1, 1, 1, 1],
+				[1, 1, 1, 1, 1, 1, 1, 1],
+				[1, 1, 1, 1, 1, 1, 1, 1],
+				[1, 1, 1, 1, 1, 1, 1, 1],
+				[1, 1, 1, 1, 1, 1, 1, 1],
+			],
+			compiled: [],
+			tile_size: [2,2] //2x2
+		};
+
+		//@todo x = w, y = h
+		var cell 	= {x: canvas.width / map.source[0].length, y: canvas.height / map.source.length};
+		function compileMap() {
+			var dx = 0, dy = 0;
+			for (var i in map.source) {
+				for (var j in map.source[i]) {
+					//4 dots
+					//top line from left to right
+					map.compiled.push({
+						moveTo: {x: dx, y: dy},
+						lineTo: {x: dx+cell.x, y: dy},
+						type: map.source[i][j],
+						draw_grid: true,
+						map_index: [i, j]
+					});
+					//from-top-right-to-bottom
+					map.compiled.push({
+						moveTo: {x: dx+cell.x, y: dy},
+						lineTo: {x: dx+cell.x, y: dy + cell.y},
+						type: map.source[i][j],
+						draw_grid: false,
+						map_index: [i, j]
+					});
+					//from left-top-to-left-bottom
+					map.compiled.push({
+						moveTo: {x: dx, y: dy},
+						lineTo: {x: dx, y: dy + cell.y},
+						type: map.source[i][j],
+						draw_grid: true,
+						map_index: [i, j]
+					});
+					//from left-bottom-to-right-bottom
+					map.compiled.push({
+						moveTo: {x: dx, y: dy + cell.y},
+						lineTo: {x: dx+cell.x, y: dy + cell.y},
+						type: map.source[i][j],
+						draw_grid: false,
+						map_index: [i, j]
+					});
+
+					dx += cell.x;
+				}
+
+				dx = 0;
+				dy += cell.y;
+			}
+		}
+
+		compileMap();
+		console.log(map);
+		ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+		function drawMapGrid() {
+			ctx.strokeStyle = ctx.fillStyle = '#000';
+			ctx.beginPath();
+			for (var i in map.compiled) {
+
+				var moveTo = map.compiled[i].moveTo;
+				var lineTo = map.compiled[i].lineTo;
+				//console.log('moveTo: ' + moveTo.x + ', ' + moveTo.y);
+				//console.log('lineTo: ' + lineTo.x + ', ' + lineTo.y);
+				if(map.compiled[i].draw_grid) {
+					//console.log('draw');
+					ctx.moveTo(moveTo.x, moveTo.y);
+					ctx.lineTo(lineTo.x, lineTo.y);
+				}
+				else {
+					//console.log('hidden');
+				}
+				//console.log('----');
+
+			}
+			ctx.stroke();
+		}
+
+		function selectTile(map_i, map_j) {
+			//counterClockwise
+			var topCenter 		= map.source[map_i-1] ? 2 : 0;
+			var topRight  		= map.source[map_i-1] && map.source[map_i-1][map_j+1] ? 4 : 0;
+			var right 	  		= map.source[map_i][map_j+1] ? 16 : 0;
+			var bottomRight    	= map.source[map_i+1] && map.source[map_i+1][map_j+1] ?  128 : 0;
+
+			var bottomCenter    = map.source[map_i+1] ? 64 : 0;
+			var bottomLeft    	= map.source[map_i+1] && map.source[map_i+1][map_j-1] ? 32 : 0;
+			var left    		= map.source[map_i][map_j-1] ? 8 : 0;
+			var topLeft    		 = map.source[map_i-1] && map.source[map_i-1][map_j-1] ? 1 : 0;
+
+			console.log(topCenter);
+			console.log(topRight);
+			console.log(right);
+			console.log(bottomRight);
+			console.log(bottomCenter);
+			console.log(bottomLeft);
+			console.log(left);
+			console.log(topLeft);
+
+			var bitMask = topCenter + topRight + right + bottomRight + bottomCenter + bottomLeft + left + topLeft;
+			console.log('map:' + map_i + ', ' + map_j + ' mask: ' + bitMask);
+			var offsetX = 0;
+			var offsetY = 0;
+
+			if(bitMask == 192 && map_i == 0 && map_j == 0) {
+				offsetX = cell.x;
+			}
+			else if(bitMask == 192 ) {
+				offsetX = cell.x * 3;
+			}
+
+			if(bitMask == 224 && map_i == 0 && map_j == map.source[0].length - 1) {
+				offsetX = cell.x * 2;
+			}
+			else if(bitMask == 224) {
+				offsetX = cell.x * 3;
+			}
+
+
+			return {x: offsetX, y: offsetY};
+		}
+
+		function drawMapTextures() {
+
+			var n = 0;
+			while(n < map.compiled.length) {
+				//4 points produce rect
+				var p1 = map.compiled[n];
+				var p2 = map.compiled[n+1];
+				var p3 = map.compiled[n+2];
+				var p4 = map.compiled[n+3];
+
+				var w = Math.abs(p1.moveTo.x - p2.moveTo.x);
+				var h = Math.abs(p3.moveTo.y - p4.moveTo.y);
+
+				if(p1.type == map.types.wall
+						&& p2.type == map.types.wall
+						&& p3.type == map.types.wall
+						&& p4.type == map.types.wall
+				) {
+					var tileOffset = selectTile(parseInt(p1.map_index[0]), parseInt(p1.map_index[1]));
+					if(tileOffset) {
+						console.log(tileOffset);
+						ctx.drawImage(tileset, tileOffset.x, tileOffset.y, cell.x, cell.y, p1.moveTo.x, p1.moveTo.y, cell.x, cell.y);
+					}
+				}
+				else if(p1.type == map.types.free
+					&& p2.type == map.types.free
+					&& p3.type == map.types.free
+					&& p4.type == map.types.free
+				) {
+					ctx.drawImage(tileset, 0, 0, cell.x, cell.y, p1.moveTo.x, p1.moveTo.y, cell.x, cell.y);
+				}
+				n += 4;
+			}
+		}
+
+		drawMapGrid();
+		drawMapTextures();
+
+
+	};
+
+	tileset.onload = function() {
+		main();
+	};
+</script>
 </body>
 </html>
