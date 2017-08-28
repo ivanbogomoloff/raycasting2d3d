@@ -24,26 +24,30 @@
 		var ctx = canvas.getContext('2d');
 		var map = {
 			types: {
-				wall: 0,
-				free: 1
+				wall: 1,
+				free: 0
 			},
 			source: [
-				[0, 0, 0, 0, 0, 0, 0, 0],
-				[0, 1, 1, 1, 1, 1, 1, 0],
-				[0, 1, 1, 1, 1, 1, 1, 0],
-				[0, 1, 1, 1, 1, 1, 1, 0],
-				[0, 1, 1, 1, 1, 1, 1, 0],
-				[0, 1, 1, 1, 1, 1, 1, 0],
-				[0, 1, 1, 1, 1, 1, 1, 0],
-				[0, 0, 0, 0, 0, 0, 0, 0],
+				[1, 1, 1, 1, 1, 1, 1, 1],
+				[1, 0, 0, 0, 0, 0, 0, 1],
+				[1, 0, 0, 0, 0, 0, 0, 1],
+				[1, 0, 0, 0, 0, 0, 0, 1],
+				[1, 0, 0, 0, 0, 0, 0, 1],
+				[1, 0, 0, 0, 0, 0, 0, 1],
+				[1, 0, 0, 0, 0, 0, 0, 1],
+				[1, 1, 1, 1, 1, 1, 1, 1]
 			],
-			compiled: [],
-			tile_size: [2,2] //2x2
+            size: 1,
+			compiled: []
 		};
 
 		//@todo x = w, y = h
 		var cell 	= {x: canvas.width / map.source[0].length, y: canvas.height / map.source.length};
-		function compileMap() {
+
+        console.log('cell');
+		console.log(cell);
+
+        function compileMap() {
 			var dx = 0, dy = 0;
 			for (var i in map.source) {
 				for (var j in map.source[i]) {
@@ -116,35 +120,54 @@
 			ctx.stroke();
 		}
 
-		function selectTile(map_i, map_j) {
-			//counterClockwise
-			var topCenter 		= map.source[map_i-1] ? 2 : 0;
-			var topRight  		= map.source[map_i-1] && map.source[map_i-1][map_j+1] ? 4 : 0;
-			var right 	  		= map.source[map_i][map_j+1] ? 16 : 0;
-			var bottomRight    	= map.source[map_i+1] && map.source[map_i+1][map_j+1] ?  128 : 0;
+		function selectTile(h, v) {
+            var m = map.source;
+            var w = map.types.wall;
+            var bitMask = m[h][v];
+            if(m[h-1] == undefined || m[h-1][v] == undefined || m[h-1][v] == w)  {
+                bitMask += 1;
+            }
 
-			var bottomCenter    = map.source[map_i+1] ? 64 : 0;
-			var bottomLeft    	= map.source[map_i+1] && map.source[map_i+1][map_j-1] ? 32 : 0;
-			var left    		= map.source[map_i][map_j-1] ? 8 : 0;
-			var topLeft    		 = map.source[map_i-1] && map.source[map_i-1][map_j-1] ? 1 : 0;
+            if(m[h-1] == undefined || m[h-1][v+1] == undefined || m[h-1][v+1] == w) {
+                bitMask += 2;
+            }
 
-			console.log(topCenter);
-			console.log(topRight);
-			console.log(right);
-			console.log(bottomRight);
-			console.log(bottomCenter);
-			console.log(bottomLeft);
-			console.log(left);
-			console.log(topLeft);
+            if(m[h][v+1] == undefined || m[h][v+1] == w) {
+                bitMask += 4;
+            }
+            if(m[h+1] == undefined || m[h+1][v+1] == undefined || m[h+1][v+1] == w) {
+                bitMask += 8;
+            }
 
-			var bitMask = topCenter + topRight + right + bottomRight + bottomCenter + bottomLeft + left + topLeft;
-			console.log('map:' + map_i + ', ' + map_j + ' mask: ' + bitMask);
+            if(m[h+1] == undefined || m[h+1][v] == undefined || m[h+1][v] == w) {
+                bitMask += 16;
+            }
+
+            if(m[h+1] == undefined || m[h+1][v-1] == undefined || m[h+1][v-1] == w) {
+                bitMask += 32;
+            }
+
+            if(m[h][v-1]= undefined || m[h][v-1] == w) {
+                bitMask += 64;
+            }
+
+            if(m[h-1] == undefined || m[h-1][v-1] == undefined || m[h-1][v-1] == w) {
+                bitMask += 128;
+            }
+
+
 			var offsetX = 0;
 			var offsetY = 0;
-
-
-
-			return {x: offsetX, y: offsetY};
+            if(bitMask == 184) {
+                offsetX = cell.x;
+            }
+            if(bitMask == 232 || bitMask == 200 || bitMask == 208) {
+                offsetX = cell.x * 3;
+            }
+            if(bitMask == 224) {
+                offsetX = cell.x * 2;
+            }
+			return {x: offsetX, y: offsetY, i: h, j: v, id: bitMask};
 		}
 
 		function drawMapTextures() {
@@ -160,24 +183,15 @@
 				var w = Math.abs(p1.moveTo.x - p2.moveTo.x);
 				var h = Math.abs(p3.moveTo.y - p4.moveTo.y);
 
-				if(p1.type == map.types.wall
-						&& p2.type == map.types.wall
-						&& p3.type == map.types.wall
-						&& p4.type == map.types.wall
-				) {
-					var tileOffset = selectTile(parseInt(p1.map_index[0]), parseInt(p1.map_index[1]));
-					if(tileOffset) {
-						console.log(tileOffset);
-						ctx.drawImage(tileset, tileOffset.x, tileOffset.y, cell.x, cell.y, p1.moveTo.x, p1.moveTo.y, cell.x, cell.y);
-					}
-				}
-				else if(p1.type == map.types.free
-					&& p2.type == map.types.free
-					&& p3.type == map.types.free
-					&& p4.type == map.types.free
-				) {
-					ctx.drawImage(tileset, 0, 0, cell.x, cell.y, p1.moveTo.x, p1.moveTo.y, cell.x, cell.y);
-				}
+                var tileOffset = selectTile(parseInt(p1.map_index[0]), parseInt(p1.map_index[1]));
+                if(tileOffset) {
+                    //console.log(tileOffset);
+                    ctx.drawImage(tileset, tileOffset.x, tileOffset.y, cell.x, cell.y, p1.moveTo.x, p1.moveTo.y, cell.x, cell.y);
+                    ctx.fillStyle = 'white';
+                    ctx.font = '14px Arial';
+                    ctx.fillText(tileOffset.id, p1.moveTo.x + 14, p1.moveTo.y + 20);
+                }
+
 				n += 4;
 			}
 		}
