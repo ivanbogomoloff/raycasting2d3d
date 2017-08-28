@@ -29,13 +29,13 @@
 			},
 			source: [
 				[0, 0, 0, 0, 0, 0, 0, 0],
-				[0, 1, 1, 1, 1, 1, 1, 1],
-				[0, 1, 1, 1, 1, 1, 1, 1],
-				[1, 1, 1, 1, 1, 1, 1, 1],
-				[1, 1, 1, 1, 1, 1, 1, 1],
-				[1, 1, 1, 1, 1, 1, 1, 1],
-				[1, 1, 1, 1, 1, 1, 1, 1],
-				[1, 1, 1, 1, 1, 1, 1, 1],
+				[0, 1, 1, 1, 1, 1, 1, 0],
+				[0, 1, 1, 1, 1, 1, 1, 0],
+				[0, 1, 1, 1, 1, 1, 1, 0],
+				[0, 1, 1, 1, 1, 1, 1, 0],
+				[0, 1, 1, 1, 1, 1, 1, 0],
+				[0, 1, 1, 1, 1, 1, 1, 0],
+				[0, 0, 0, 0, 0, 0, 0, 0],
 			],
 			compiled: [],
 			tile_size: [2,2] //2x2
@@ -149,13 +149,37 @@
 				offsetX = cell.x * 3;
 			}
 
-			if(bitMask == 224 && map_i == 0 && map_j == map.source[0].length - 1) {
+			if(bitMask == 96 && map_i === 0 && map_j == map.source[map_i].length - 1) {
 				offsetX = cell.x * 2;
 			}
-			else if(bitMask == 224) {
+			else if(bitMask == 224 || bitMask == 96) {
 				offsetX = cell.x * 3;
 			}
 
+			if(bitMask == 210 || bitMask == 214 || bitMask == 86) {
+				offsetX = cell.x;
+				offsetY = cell.y;
+			}
+
+			if((bitMask == 22 || bitMask == 6) && map_i == map.source.length - 1 && map_j === 0) {
+				offsetX = 0;
+				offsetY = cell.y;
+			}
+			else if(bitMask == 23 || bitMask == 7 || bitMask == 6) {
+				offsetY = cell.y * 3;
+			}
+
+			if(bitMask == 3 && map_i == map.source.length - 1 && map_j == map.source[map_i].length - 1) {
+				offsetY = cell.y * 2;
+			}
+			else if(bitMask == 3) {
+				offsetY = cell.y * 3;
+			}
+
+			if(bitMask == 75 || bitMask == 107 || bitMask == 106) {
+				offsetX = cell.x * 2;
+				offsetY = cell.y * 2;
+			}
 
 			return {x: offsetX, y: offsetY};
 		}
