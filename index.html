@@ -16,16 +16,36 @@
 </head>
 <body>
 <canvas width="512" height="512" id="canvas"></canvas>
+<div style="margin-top: 10px;">
+	<button id="tiles_debug" style="margin: 10px;">TILES DEBUG</button>
+	<button id="collider_debug" style="margin: 10px;">COLLIDER DEBUG</button>
+
+</div>
 <script type="text/javascript">
+	var isDebugTiles = isDebugCollider = false;
+	document.getElementById('tiles_debug').addEventListener('click', function() {
+		isDebugTiles = isDebugTiles ? false : true;
+		main(isDebugTiles, isDebugCollider);
+	});
+	document.getElementById('collider_debug').addEventListener('click', function() {
+		isDebugCollider = isDebugCollider ? false : true;
+		main(isDebugTiles, isDebugCollider);
+	});
+
 	var tileset = new Image();
 	tileset.src = '20030921.jpg';
 
-	function main() {
+	function main(debugGroundBitmask, debugColliderPoints) {
 		var canvas = document.getElementById('canvas');
 		var ctx = canvas.getContext('2d');
 		var map = {
 			types: {
 				wall: 1,
+				free: 0
+			},
+			//percents
+			collides: {
+				wall: 50,
 				free: 0
 			},
 			source: [
@@ -43,7 +63,7 @@
 		};
 
 		//@todo x = w, y = h
-		var cell 	= {x: canvas.width / map.source[0].length, y: canvas.height / map.source.length};
+		var cell 	= {w: canvas.width / map.source[0].length, h: canvas.height / map.source.length};
 
         console.log('cell');
 		console.log(cell);
@@ -56,15 +76,15 @@
 					//top line from left to right
 					map.compiled.push({
 						moveTo: {x: dx, y: dy},
-						lineTo: {x: dx+cell.x, y: dy},
+						lineTo: {x: dx+cell.w, y: dy},
 						type: map.source[i][j],
 						draw_grid: true,
 						map_index: [i, j]
 					});
 					//from-top-right-to-bottom
 					map.compiled.push({
-						moveTo: {x: dx+cell.x, y: dy},
-						lineTo: {x: dx+cell.x, y: dy + cell.y},
+						moveTo: {x: dx+cell.w, y: dy},
+						lineTo: {x: dx+cell.w, y: dy + cell.h},
 						type: map.source[i][j],
 						draw_grid: false,
 						map_index: [i, j]
@@ -72,25 +92,25 @@
 					//from left-top-to-left-bottom
 					map.compiled.push({
 						moveTo: {x: dx, y: dy},
-						lineTo: {x: dx, y: dy + cell.y},
+						lineTo: {x: dx, y: dy + cell.h},
 						type: map.source[i][j],
 						draw_grid: true,
 						map_index: [i, j]
 					});
 					//from left-bottom-to-right-bottom
 					map.compiled.push({
-						moveTo: {x: dx, y: dy + cell.y},
-						lineTo: {x: dx+cell.x, y: dy + cell.y},
+						moveTo: {x: dx, y: dy + cell.h},
+						lineTo: {x: dx+cell.w, y: dy + cell.h},
 						type: map.source[i][j],
 						draw_grid: false,
 						map_index: [i, j]
 					});
 
-					dx += cell.x;
+					dx += cell.w;
 				}
 
 				dx = 0;
-				dy += cell.y;
+				dy += cell.h;
 			}
 		}
 
@@ -119,7 +139,12 @@
 			ctx.stroke();
 		}
 
-		function selectTile(h, v) {
+		/**
+		 * @param h
+		 * @param v
+		 * @returns {number}
+		 */
+		function getTileBitmask(h, v) {
             var m = map.source;
             var w = map.types.wall;
             var bitMask = 0;
@@ -154,49 +179,138 @@
                 bitMask += 1;
             }
 
-
-			var offsetX = 0;
-			var offsetY = 0;
-            //top corner left
-            if(bitMask == 119) {
-                offsetX = cell.x;
-            }
-            //top wall
-            if(bitMask == 31 || bitMask == 63 || bitMask == 159) {
-                offsetX = cell.x * 3;
-            }
-            //top corner right
-            if(bitMask == 223) {
-                offsetX = cell.x * 2;
-            }
-            //bottom left corner
-            if(bitMask == 242) {
-                offsetY = cell.y;
-            }
-            //bottom right corner
-            if(bitMask == 254) {
-                offsetY = cell.y * 2;
-            }
-            //bottom wall
-            if(bitMask == 249 || bitMask == 248 || bitMask == 252) {
-                offsetY = cell.y * 3;
-            }
-            //right wall
-            if(bitMask == 102 || bitMask == 98 || bitMask == 226) {
-                offsetX = cell.x ;
-                offsetY = cell.y ;
-            }
-            //left wall
-            if(bitMask == 215 || bitMask == 214 || bitMask == 246) {
-                offsetX = cell.x * 2;
-                offsetY = cell.y * 2;
-            }
-
-
-			return {x: offsetX, y: offsetY, i: h, j: v, id: bitMask};
+			return bitMask;
 		}
 
-		function drawMapTextures() {
+		/**
+		 *
+		 * @param bitMask
+		 * @returns {{x: number, y: number}}
+		 */
+		function getGroundTileOffsetByBitmask(bitMask) {
+			var offsetX = 0;
+			var offsetY = 0;
+			//top corner left
+			if(bitMask == 119) {
+				offsetX = cell.w;
+			}
+			//top wall
+			if(bitMask == 31 || bitMask == 63 || bitMask == 159) {
+				offsetX = cell.w * 3;
+			}
+			//top corner right
+			if(bitMask == 223) {
+				offsetX = cell.w * 2;
+			}
+			//bottom left corner
+			if(bitMask == 242) {
+				offsetY = cell.h;
+			}
+			//bottom right corner
+			if(bitMask == 254) {
+				offsetY = cell.h * 2;
+			}
+			//bottom wall
+			if(bitMask == 249 || bitMask == 248 || bitMask == 252) {
+				offsetY = cell.h * 3;
+			}
+			//right wall
+			if(bitMask == 102 || bitMask == 98 || bitMask == 226) {
+				offsetX = cell.w ;
+				offsetY = cell.h ;
+			}
+			//left wall
+			if(bitMask == 215 || bitMask == 214 || bitMask == 246) {
+				offsetX = cell.w * 2;
+				offsetY = cell.h * 2;
+			}
+
+
+			return {x: offsetX, y: offsetY};
+		}
+
+		function getGroundTileColliderByBitmask(p1, p2, p3, p4, bitMask) {
+			var chx = parseInt(cell.w / 2);
+			var chy = parseInt(cell.h / 2);
+			var pSize = 50;
+			var colliderPoints = [];
+			//top corner left
+			if(bitMask == 119) {
+				colliderPoints.push({
+					moveTo: {x: p1.moveTo.x + chx, y: p1.lineTo.y + chy},
+					lineTo: {x: p1.lineTo.x, y: p1.lineTo.y + chy}
+				});
+				colliderPoints.push({
+					moveTo: {x: p1.moveTo.x + chx, y: p1.moveTo.y + chy},
+					lineTo: {x: p1.moveTo.x + chx, y: p3.lineTo.y}
+				});
+			}
+			//left wall
+			if(bitMask == 102 || bitMask == 98 || bitMask == 226) {
+				colliderPoints.push({
+					moveTo: {x: p1.moveTo.x + chx, y: p1.lineTo.y},
+					lineTo: {x: p1.moveTo.x  + chx, y: p3.lineTo.y}
+				});
+			}
+			//left bottom corner
+			if(bitMask == 242) {
+				colliderPoints.push({
+					moveTo: {x: p1.moveTo.x + chx, y: p1.moveTo.y},
+					lineTo: {x: p1.moveTo.x  + chx, y: p1.moveTo.y + chy}
+				});
+				colliderPoints.push({
+					moveTo: {x: p1.moveTo.x  + chx, y: p1.moveTo.y + chy},
+					lineTo: {x: p1.lineTo.x, y: p1.moveTo.y + chy}
+				});
+			}
+			//top wall
+			if(bitMask == 63 || bitMask == 31 || bitMask == 159) {
+				colliderPoints.push({
+					moveTo: {x: p1.moveTo.x, y: p1.moveTo.y + chy},
+					lineTo: {x: p1.lineTo.x, y: p1.moveTo.y + chy}
+				});
+			}
+			//right top corner
+			if(bitMask == 223) {
+				colliderPoints.push({
+					moveTo: {x: p1.moveTo.x + chx, y: p1.moveTo.y + chy},
+					lineTo: {x: p1.moveTo.x, y: p1.moveTo.y + chy}
+				});
+				colliderPoints.push({
+					moveTo: {x: p1.moveTo.x + chx, y: p1.moveTo.y + chy},
+					lineTo: {x: p1.moveTo.x + chx, y: p3.lineTo.y}
+				});
+			}
+			//right wall
+			if(bitMask == 215 || bitMask == 214 || bitMask == 246) {
+				colliderPoints.push({
+					moveTo: {x: p1.moveTo.x + chx, y: p1.moveTo.y},
+					lineTo: {x: p1.moveTo.x + chx, y: p3.lineTo.y}
+				});
+			}
+			//right bottom corner
+			if(bitMask == 254) {
+				colliderPoints.push({
+					moveTo: {x: p1.moveTo.x + chx, y: p1.moveTo.y + chy},
+					lineTo: {x: p1.moveTo.x  + chx, y: p1.moveTo.y}
+				});
+				colliderPoints.push({
+					moveTo: {x: p1.moveTo.x + chx, y: p1.moveTo.y + chy},
+					lineTo: {x: p1.moveTo.x, y: p1.moveTo.y + chy}
+				});
+			}
+			//bottom wall
+			if(bitMask == 249 || bitMask == 248 || bitMask == 252) {
+				colliderPoints.push({
+					moveTo: {x: p1.moveTo.x, y: p1.moveTo.y + chy},
+					lineTo: {x: p1.lineTo.x , y: p1.moveTo.y + chy}
+				});
+			}
+
+			return colliderPoints;
+		}
+
+		function drawMap() {
 
 			var n = 0;
 			while(n < map.compiled.length) {
@@ -209,28 +323,46 @@
 				var w = Math.abs(p1.moveTo.x - p2.moveTo.x);
 				var h = Math.abs(p3.moveTo.y - p4.moveTo.y);
 
-                var tileOffset = selectTile(parseInt(p1.map_index[0]), parseInt(p1.map_index[1]));
-                if(tileOffset) {
-                    //console.log(tileOffset);
-                    ctx.drawImage(tileset, tileOffset.x, tileOffset.y, cell.x, cell.y, p1.moveTo.x, p1.moveTo.y, cell.x, cell.y);
-                    var drawTileId = true;
-                    if(drawTileId) {
-                        ctx.fillStyle = 'white';
-                        ctx.font = '14px Arial';
-                        ctx.fillText(tileOffset.id, p1.moveTo.x + 14, p1.moveTo.y + 20);
-                    }
+				/**
+				 * GROUND TERRAIN
+				 */
+				if (p1.type == map.types.wall || p1.type == map.types.free) {
+					var bitMask 		 = getTileBitmask(parseInt(p1.map_index[0]), parseInt(p1.map_index[1]));
+					var groundOffset 	 = getGroundTileOffsetByBitmask(bitMask);
+					var colliderPoints   = getGroundTileColliderByBitmask(p1, p2, p3, p4, bitMask);
 
-                }
+					ctx.drawImage(tileset, groundOffset.x, groundOffset.y, cell.w, cell.h, p1.moveTo.x, p1.moveTo.y, cell.w, cell.h);
+					if(debugGroundBitmask) {
+						ctx.fillStyle = 'white';
+						ctx.font = '14px Arial';
+						ctx.fillText(bitMask, p1.moveTo.x + 14, p1.moveTo.y + 20);
+					}
+					if(debugColliderPoints && colliderPoints) {
+						ctx.fillStyle = 'red';
+						for(var i in colliderPoints) {
+							var point = colliderPoints[i];
+							console.log(point);
+							ctx.beginPath();
+							ctx.arc(point.moveTo.x, point.moveTo.y, 5, false, Math.PI * 2);
+							ctx.arc(point.lineTo.x, point.lineTo.y, 5, false, Math.PI * 2);
+							ctx.fill();
+						}
+					}
+				}
 
 				n += 4;
 			}
 		}
 
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-		drawMapTextures();
-        drawMapGrid();
+		drawMap();
+		drawMapGrid();
+
+		console.log(map);
 	};
 
+
+	//RUN!
 	tileset.onload = function() {
 		main();
 	};
