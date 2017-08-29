@@ -20,9 +20,25 @@
 	<button id="tiles_debug" style="margin: 10px;">TILES DEBUG</button>
 	<button id="collider_debug" style="margin: 10px;">COLLIDER DEBUG</button>
 	<button id="collider_debug_lines" style="margin: 10px;">COLLIDER LINES DEBUG</button>
+	<hr/>
+	<button id="move_forward" style="margin: 10px;">FORWARD</button>
+	<button id="rotate_left" style="margin: 10px;">ROTATE LEFT</button>
 
 </div>
 <script type="text/javascript">
+	var rotatePoint = function(x, y, ox, oy, angle) {
+		var s = Math.sin(deg2rad(angle));
+		var c = Math.cos(deg2rad(angle));
+
+		return {
+			x: Math.ceil(ox + x * c),
+			y: Math.ceil(oy - y * s)
+		};
+	}
+
+	var deg2rad = function (deg) {
+		return (Math.PI / 180) * deg;
+	}
 	var isDebugTiles = isDebugCollider = isDebugColliderLines = false;
 	document.getElementById('tiles_debug').addEventListener('click', function() {
 		isDebugTiles = isDebugTiles ? false : true;
@@ -37,8 +53,11 @@
 		main(isDebugTiles, isDebugCollider, isDebugColliderLines);
 	});
 
+
 	var tileset = new Image();
 	tileset.src = '20030921.jpg';
+	var tanksSprite    = new Image();
+	tanksSprite.src = 'tank.png';
 
 	function main(debugGroundBitmask, debugColliderPoints, debugColliderLines) {
 
@@ -67,13 +86,22 @@
             size: 1,
 			compiled: []
 		};
-		var player = {
-			
-		};
 
 		//@todo x = w, y = h
 		var cell 	= {w: canvas.width / map.source[0].length, h: canvas.height / map.source.length};
 
+		player = {
+			x: cell.w * 3 + 50,
+			y: cell.h * 4 + 30,
+			w: cell.w,
+			h: cell.h,
+			rangle: 90,
+			currentAngle: 0,
+			dir: {x: 0, y: -1}
+		};
+		var cache = {
+			bitmask: []
+		};
         console.log('cell');
 		console.log(cell);
 
@@ -343,7 +371,21 @@
 				 * GROUND TERRAIN
 				 */
 				if (p1.type == map.types.wall || p1.type == map.types.free) {
-					var bitMask 		 = getTileBitmask(parseInt(p1.map_index[0]), parseInt(p1.map_index[1]));
+					/**
+					 * NEEED CACHE BITMASK BECAUSE IF NOT CACHE
+					 * GET FUCK BEHAVIOR OF CALC getTileBitmask!
+					 *
+					 * @type {string}
+					 */
+					var cacheKey 		 = p1.map_index[0] + '_' + parseInt(p1.map_index[1]);
+					if(cache.bitmask[cacheKey] == undefined) {
+						var bitMask 		 = getTileBitmask(parseInt(p1.map_index[0]), parseInt(p1.map_index[1]));
+						cache.bitmask[cacheKey] = bitMask;
+					}
+					else {
+						var bitMask = cache.bitmask[cacheKey];
+					}
+
 					var groundOffset 	 = getGroundTileOffsetByBitmask(bitMask);
 					var colliderPoints   = getGroundTileColliderByBitmask(p1, p2, p3, p4, bitMask, p1.type);
 
@@ -381,18 +423,90 @@
 			}
 		}
 
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-		drawMap();
-		drawMapGrid();
+		function drawPlayer() {
+			ctx.drawImage(
+					tanksSprite,
+					95,
+					0,
+					65,
+					80,
+					player.x,
+					player.y,
+					player.w,
+					player.h
+			);
+			ctx.restore();
+		}
+
+        function render(noDrawPlayer) {
+			ctx.clearRect(0, 0, canvas.width, canvas.height);
+			drawMap();
+			drawMapGrid();
+			if (noDrawPlayer == undefined || !noDrawPlayer) drawPlayer();
+		}
+
+		render();
+
+
+		document.getElementById('move_forward').addEventListener('click', function() {
+			if(player.currentAngle == 90) {
+				player.y -= 10;
+			}
+			else if(player.currentAngle == 270) {
+				player.y += 10;
+			}
+
+			render();
+		});
+
+		document.getElementById('rotate_left').addEventListener('click', function() {
+
+			render(true);
+			ctx.save();
+			ctx.translate(player.x, player.y + player.h / 2);
+
+			player.currentAngle -= player.rangle;
+			if(player.currentAngle <= -360) {
+				player.currentAngle = 360;
+			}
+			ctx.rotate(deg2rad(player.currentAngle));
+			var pox = player.x;
+			var poy = player.y;
+			var rp = rotatePoint(1, player.h / 2, pox, poy, player.currentAngle);
+			console.log(player);
+			console.log(rp);
+			player.x = 0;
+			player.y = 0;
+			drawPlayer();
+			ctx.restore();
+
+			player.x = rp.x;
+			player.y = rp.y;
+
+		});
 
 		console.log(map);
 	};
 
-
+	var countImages = 0;
+	var ready = false;
 	//RUN!
 	tileset.onload = function() {
-		main();
+		countImages++;
 	};
+
+	tanksSprite.onload = function() {
+		countImages++;
+	};
+
+	var loader = setInterval(function() {
+		console.log('loading...');
+		if(countImages == 2) {
+			main();
+			clearInterval(loader);
+		}
+	}, 100);
+
 </script>
 </body>
 </html>
