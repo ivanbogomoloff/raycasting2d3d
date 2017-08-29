@@ -1,507 +1,532 @@
 <html>
 <head>
-	<title>Test</title>
-	<style type="text/css">
-		body {
-			padding: 0;
-			margin: 0;
+    <title>Test</title>
+    <style type="text/css">
+        body {
+            padding: 0;
+            margin: 0;
             background: #000;
-		}
-		canvas {
-			padding: 0;
-			margin: 10px auto;
-			border: 1px solid black;
-		}
-	</style>
+        }
+        canvas {
+            padding: 0;
+            margin: 10px auto;
+            border: 1px solid black;
+        }
+    </style>
 </head>
 <body>
 <canvas width="512" height="512" id="canvas"></canvas>
 <div style="margin-top: 10px;">
-	<button id="tiles_debug" style="margin: 10px;">TILES DEBUG</button>
-	<button id="collider_debug" style="margin: 10px;">COLLIDER DEBUG</button>
-	<button id="collider_debug_lines" style="margin: 10px;">COLLIDER LINES DEBUG</button>
-	<hr/>
-	<button id="move_forward" style="margin: 10px;">FORWARD</button>
-	<button id="rotate_left" style="margin: 10px;">ROTATE LEFT</button>
+    <button id="tiles_debug" style="margin: 10px;">TILES DEBUG</button>
+    <button id="collider_debug" style="margin: 10px;">COLLIDER DEBUG</button>
+    <button id="collider_debug_lines" style="margin: 10px;">COLLIDER LINES DEBUG</button>
+    <hr/>
+    <button id="move_forward" style="margin: 10px;">FORWARD</button>
+    <button id="rotate_left" style="margin: 10px;">ROTATE LEFT</button>
 
 </div>
 <script type="text/javascript">
-	var rotatePoint = function(x, y, ox, oy, angle) {
-		var s = Math.sin(deg2rad(angle));
-		var c = Math.cos(deg2rad(angle));
+var rotatePoint = function(x, y, ox, oy, angle) {
+    var s = Math.sin(deg2rad(angle));
+    var c = Math.cos(deg2rad(angle));
 
-		return {
-			x: Math.ceil(ox + x * c),
-			y: Math.ceil(oy - y * s)
-		};
-	}
+    return {
+        x: Math.ceil(ox + x * c),
+        y: Math.ceil(oy - y * s)
+    };
+};
 
-	var deg2rad = function (deg) {
-		return (Math.PI / 180) * deg;
-	}
-	var isDebugTiles = isDebugCollider = isDebugColliderLines = false;
-	document.getElementById('tiles_debug').addEventListener('click', function() {
-		isDebugTiles = isDebugTiles ? false : true;
-		main(isDebugTiles, isDebugCollider, isDebugColliderLines);
-	});
-	document.getElementById('collider_debug').addEventListener('click', function() {
-		isDebugCollider = isDebugCollider ? false : true;
-		main(isDebugTiles, isDebugCollider, isDebugColliderLines);
-	});
-	document.getElementById('collider_debug_lines').addEventListener('click', function() {
-		isDebugColliderLines = isDebugColliderLines ? false : true;
-		main(isDebugTiles, isDebugCollider, isDebugColliderLines);
-	});
+var deg2rad = function (deg) {
+    return (Math.PI / 180) * deg;
+};
+var isDebugTiles = isDebugCollider = isDebugColliderLines = false;
+document.getElementById('tiles_debug').addEventListener('click', function() {
+    isDebugTiles = isDebugTiles ? false : true;
+    main(isDebugTiles, isDebugCollider, isDebugColliderLines);
+});
+document.getElementById('collider_debug').addEventListener('click', function() {
+    isDebugCollider = isDebugCollider ? false : true;
+    main(isDebugTiles, isDebugCollider, isDebugColliderLines);
+});
+document.getElementById('collider_debug_lines').addEventListener('click', function() {
+    isDebugColliderLines = isDebugColliderLines ? false : true;
+    main(isDebugTiles, isDebugCollider, isDebugColliderLines);
+});
 
 
-	var tileset = new Image();
-	tileset.src = '20030921.jpg';
-	var tanksSprite    = new Image();
-	tanksSprite.src = 'tank.png';
+var tileset = new Image();
+tileset.src = '20030921.jpg';
+var tanksSprite    = new Image();
+tanksSprite.src = 'tank.png';
 
-	function main(debugGroundBitmask, debugColliderPoints, debugColliderLines) {
+function main(debugGroundBitmask, debugColliderPoints, debugColliderLines) {
 
-		var canvas = document.getElementById('canvas');
-		var ctx = canvas.getContext('2d');
-		var map = {
-			types: {
-				wall: 1,
-				free: 0
-			},
-			//percents
-			collides: {
-				wall: 50,
-				free: 0
-			},
-			source: [
-				[1, 1, 1, 1, 1, 1, 1, 1],
-				[1, 0, 0, 0, 0, 0, 0, 1],
-				[1, 0, 0, 0, 0, 0, 0, 1],
-				[1, 0, 0, 0, 0, 0, 0, 1],
-				[1, 0, 0, 0, 0, 0, 0, 1],
-				[1, 0, 0, 0, 0, 0, 0, 1],
-				[1, 0, 0, 0, 0, 0, 0, 1],
-				[1, 1, 1, 1, 1, 1, 1, 1],
-			],
-            size: 1,
-			compiled: []
-		};
+    var canvas = document.getElementById('canvas');
+    var ctx = canvas.getContext('2d');
+    var map = {
+        types: {
+            wall: 1,
+            free: 0
+        },
+        //percents
+        collides: {
+            wall: 50,
+            free: 0
+        },
+        source: [
+            [1, 1, 1, 1, 1, 1, 1, 1],
+            [1, 0, 0, 0, 0, 0, 0, 1],
+            [1, 0, 0, 0, 0, 0, 0, 1],
+            [1, 0, 0, 0, 0, 0, 0, 1],
+            [1, 0, 0, 0, 0, 0, 0, 1],
+            [1, 0, 0, 0, 0, 0, 0, 1],
+            [1, 0, 0, 0, 0, 0, 0, 1],
+            [1, 1, 1, 1, 1, 1, 1, 1],
+        ],
+        size: 1,
+        compiled: []
+    };
 
-		//@todo x = w, y = h
-		var cell 	= {w: canvas.width / map.source[0].length, h: canvas.height / map.source.length};
+    //@todo x = w, y = h
+    var cell 	= {w: canvas.width / map.source[0].length, h: canvas.height / map.source.length};
 
-		player = {
-			x: cell.w * 3 + 50,
-			y: cell.h * 4 + 30,
-			w: cell.w,
-			h: cell.h,
-			rangle: 90,
-			currentAngle: 0,
-			dir: {x: 0, y: -1}
-		};
-		var cache = {
-			bitmask: []
-		};
-        console.log('cell');
-		console.log(cell);
+    player = {
+        x: cell.w * 3 + 50,
+        y: cell.h * 4 + 30,
+        w: cell.w,
+        h: cell.h,
+        rangle: 90,
+        currentAngle: 0,
+        dir: {x: 0, y: -1}
+    };
+    var cache = {
+        bitmask: []
+    };
+    console.log('cell');
+    console.log(cell);
 
-        function compileMap() {
-			var dx = 0, dy = 0;
-			for (var i in map.source) {
-				for (var j in map.source[i]) {
-					//4 dots
-					//top line from left to right
-					map.compiled.push({
-						moveTo: {x: dx, y: dy},
-						lineTo: {x: dx+cell.w, y: dy},
-						type: map.source[i][j],
-						draw_grid: true,
-						map_index: [i, j]
-					});
-					//from-top-right-to-bottom
-					map.compiled.push({
-						moveTo: {x: dx+cell.w, y: dy},
-						lineTo: {x: dx+cell.w, y: dy + cell.h},
-						type: map.source[i][j],
-						draw_grid: false,
-						map_index: [i, j]
-					});
-					//from left-top-to-left-bottom
-					map.compiled.push({
-						moveTo: {x: dx, y: dy},
-						lineTo: {x: dx, y: dy + cell.h},
-						type: map.source[i][j],
-						draw_grid: true,
-						map_index: [i, j]
-					});
-					//from left-bottom-to-right-bottom
-					map.compiled.push({
-						moveTo: {x: dx, y: dy + cell.h},
-						lineTo: {x: dx+cell.w, y: dy + cell.h},
-						type: map.source[i][j],
-						draw_grid: false,
-						map_index: [i, j]
-					});
+    function compileMap() {
+        var dx = 0, dy = 0;
+        for (var i in map.source) {
+            for (var j in map.source[i]) {
+                //4 dots
+                //top line from left to right
+                map.compiled.push({
+                    moveTo: {x: dx, y: dy},
+                    lineTo: {x: dx+cell.w, y: dy},
+                    type: map.source[i][j],
+                    draw_grid: true,
+                    map_index: [i, j]
+                });
+                //from-top-right-to-bottom
+                map.compiled.push({
+                    moveTo: {x: dx+cell.w, y: dy},
+                    lineTo: {x: dx+cell.w, y: dy + cell.h},
+                    type: map.source[i][j],
+                    draw_grid: false,
+                    map_index: [i, j]
+                });
+                //from left-top-to-left-bottom
+                map.compiled.push({
+                    moveTo: {x: dx, y: dy},
+                    lineTo: {x: dx, y: dy + cell.h},
+                    type: map.source[i][j],
+                    draw_grid: true,
+                    map_index: [i, j]
+                });
+                //from left-bottom-to-right-bottom
+                map.compiled.push({
+                    moveTo: {x: dx, y: dy + cell.h},
+                    lineTo: {x: dx+cell.w, y: dy + cell.h},
+                    type: map.source[i][j],
+                    draw_grid: false,
+                    map_index: [i, j]
+                });
 
-					dx += cell.w;
-				}
-
-				dx = 0;
-				dy += cell.h;
-			}
-		}
-
-		compileMap();
-
-		function drawMapGrid() {
-			ctx.strokeStyle = ctx.fillStyle = '#005214';
-			ctx.beginPath();
-			for (var i in map.compiled) {
-
-				var moveTo = map.compiled[i].moveTo;
-				var lineTo = map.compiled[i].lineTo;
-				//console.log('moveTo: ' + moveTo.x + ', ' + moveTo.y);
-				//console.log('lineTo: ' + lineTo.x + ', ' + lineTo.y);
-				if(map.compiled[i].draw_grid) {
-					//console.log('draw');
-					ctx.moveTo(moveTo.x, moveTo.y);
-					ctx.lineTo(lineTo.x, lineTo.y);
-				}
-				else {
-					//console.log('hidden');
-				}
-				//console.log('----');
-
-			}
-			ctx.stroke();
-		}
-
-		/**
-		 * @param h
-		 * @param v
-		 * @returns {number}
-		 */
-		function getTileBitmask(h, v) {
-            var m = map.source;
-            var w = map.types.wall;
-            var bitMask = 0;
-            if(m[h-1] == undefined || m[h-1][v] == undefined || m[h-1][v] == w)  {
-                bitMask += 2;
+                dx += cell.w;
             }
 
-            if(m[h-1] == undefined || m[h-1][v+1] == undefined || m[h-1][v+1] == w) {
-                bitMask += 4;
+            dx = 0;
+            dy += cell.h;
+        }
+    }
+
+    compileMap();
+
+    function drawMapGrid() {
+        ctx.strokeStyle = ctx.fillStyle = '#005214';
+        ctx.beginPath();
+        for (var i in map.compiled) {
+
+            var moveTo = map.compiled[i].moveTo;
+            var lineTo = map.compiled[i].lineTo;
+            //console.log('moveTo: ' + moveTo.x + ', ' + moveTo.y);
+            //console.log('lineTo: ' + lineTo.x + ', ' + lineTo.y);
+            if(map.compiled[i].draw_grid) {
+                //console.log('draw');
+                ctx.moveTo(moveTo.x, moveTo.y);
+                ctx.lineTo(lineTo.x, lineTo.y);
+            }
+            else {
+                //console.log('hidden');
+            }
+            //console.log('----');
+
+        }
+        ctx.stroke();
+    }
+
+    /**
+     * @param h
+     * @param v
+     * @returns {number}
+     */
+    function getTileBitmask(h, v) {
+        var m = map.source;
+        var w = map.types.wall;
+        var bitMask = 0;
+        if(m[h-1] == undefined || m[h-1][v] == undefined || m[h-1][v] == w)  {
+            bitMask += 2;
+        }
+
+        if(m[h-1] == undefined || m[h-1][v+1] == undefined || m[h-1][v+1] == w) {
+            bitMask += 4;
+        }
+
+        if(m[h][v+1] == undefined || m[h][v+1] == w) {
+            bitMask += 16;
+        }
+        if(m[h+1] == undefined || m[h+1][v+1] == undefined || m[h+1][v+1] == w) {
+            bitMask += 128;
+        }
+
+        if(m[h+1] == undefined || m[h+1][v] == undefined || m[h+1][v] == w) {
+            bitMask += 64;
+        }
+
+        if(m[h+1] == undefined || m[h+1][v-1] == undefined || m[h+1][v-1] == w) {
+            bitMask += 32;
+        }
+
+        if(m[h][v-1]= undefined || m[h][v-1] == w) {
+            bitMask += 8;
+        }
+
+        if(m[h-1] == undefined || m[h-1][v-1] == undefined || m[h-1][v-1] == w) {
+            bitMask += 1;
+        }
+
+        return bitMask;
+    }
+
+    /**
+     *
+     * @param bitMask
+     * @returns {{x: number, y: number}}
+     */
+    function getGroundTileOffsetByBitmask(bitMask) {
+        var offsetX = 0;
+        var offsetY = 0;
+        //top corner left
+        if(bitMask == 119) {
+            offsetX = cell.w;
+        }
+        //top wall
+        if(bitMask == 31 || bitMask == 63 || bitMask == 159) {
+            offsetX = cell.w * 3;
+        }
+        //top corner right
+        if(bitMask == 223) {
+            offsetX = cell.w * 2;
+        }
+        //bottom left corner
+        if(bitMask == 242) {
+            offsetY = cell.h;
+        }
+        //bottom right corner
+        if(bitMask == 254) {
+            offsetY = cell.h * 2;
+        }
+        //bottom wall
+        if(bitMask == 249 || bitMask == 248 || bitMask == 252) {
+            offsetY = cell.h * 3;
+        }
+        //right wall
+        if(bitMask == 102 || bitMask == 98 || bitMask == 226) {
+            offsetX = cell.w ;
+            offsetY = cell.h ;
+        }
+        //left wall
+        if(bitMask == 215 || bitMask == 214 || bitMask == 246) {
+            offsetX = cell.w * 2;
+            offsetY = cell.h * 2;
+        }
+
+
+        return {x: offsetX, y: offsetY};
+    }
+
+
+    function getGroundTileColliderByBitmask(p1, p2, p3, p4, bitMask, type) {
+        var chx = cell.x;
+        var chy = cell.y;
+
+        //GROUND COLLIDER
+        if(type == map.types.wall) {
+            chx = parseInt(cell.w * (map.collides.wall / 100));
+            chy = parseInt(cell.h * (map.collides.wall / 100));
+        }
+
+        var colliderPoints = [];
+        //top corner left
+        if(bitMask == 119) {
+            colliderPoints.push({
+                moveTo: {x: p1.moveTo.x + chx, y: p1.lineTo.y + chy},
+                lineTo: {x: p1.lineTo.x, y: p1.lineTo.y + chy}
+            });
+            colliderPoints.push({
+                moveTo: {x: p1.moveTo.x + chx, y: p1.moveTo.y + chy},
+                lineTo: {x: p1.moveTo.x + chx, y: p3.lineTo.y}
+            });
+        }
+        //left wall
+        if(bitMask == 102 || bitMask == 98 || bitMask == 226) {
+            colliderPoints.push({
+                moveTo: {x: p1.moveTo.x + chx, y: p1.lineTo.y},
+                lineTo: {x: p1.moveTo.x  + chx, y: p3.lineTo.y}
+            });
+        }
+        //left bottom corner
+        if(bitMask == 242) {
+            colliderPoints.push({
+                moveTo: {x: p1.moveTo.x + chx, y: p1.moveTo.y},
+                lineTo: {x: p1.moveTo.x  + chx, y: p1.moveTo.y + chy}
+            });
+            colliderPoints.push({
+                moveTo: {x: p1.moveTo.x  + chx, y: p1.moveTo.y + chy},
+                lineTo: {x: p1.lineTo.x, y: p1.moveTo.y + chy}
+            });
+        }
+        //top wall
+        if(bitMask == 63 || bitMask == 31 || bitMask == 159) {
+            colliderPoints.push({
+                moveTo: {x: p1.moveTo.x, y: p1.moveTo.y + chy},
+                lineTo: {x: p1.lineTo.x, y: p1.moveTo.y + chy}
+            });
+        }
+        //right top corner
+        if(bitMask == 223) {
+            colliderPoints.push({
+                moveTo: {x: p1.moveTo.x + chx, y: p1.moveTo.y + chy},
+                lineTo: {x: p1.moveTo.x, y: p1.moveTo.y + chy}
+            });
+            colliderPoints.push({
+                moveTo: {x: p1.moveTo.x + chx, y: p1.moveTo.y + chy},
+                lineTo: {x: p1.moveTo.x + chx, y: p3.lineTo.y}
+            });
+        }
+        //right wall
+        if(bitMask == 215 || bitMask == 214 || bitMask == 246) {
+            colliderPoints.push({
+                moveTo: {x: p1.moveTo.x + chx, y: p1.moveTo.y},
+                lineTo: {x: p1.moveTo.x + chx, y: p3.lineTo.y}
+            });
+        }
+        //right bottom corner
+        if(bitMask == 254) {
+            colliderPoints.push({
+                moveTo: {x: p1.moveTo.x + chx, y: p1.moveTo.y + chy},
+                lineTo: {x: p1.moveTo.x  + chx, y: p1.moveTo.y}
+            });
+            colliderPoints.push({
+                moveTo: {x: p1.moveTo.x + chx, y: p1.moveTo.y + chy},
+                lineTo: {x: p1.moveTo.x, y: p1.moveTo.y + chy}
+            });
+        }
+        //bottom wall
+        if(bitMask == 249 || bitMask == 248 || bitMask == 252) {
+            colliderPoints.push({
+                moveTo: {x: p1.moveTo.x, y: p1.moveTo.y + chy},
+                lineTo: {x: p1.lineTo.x , y: p1.moveTo.y + chy}
+            });
+        }
+
+        return colliderPoints;
+    }
+
+    function drawMap() {
+
+        var n = 0;
+        while(n < map.compiled.length) {
+            //4 points produce rect
+            var p1 = map.compiled[n];
+            var p2 = map.compiled[n+1];
+            var p3 = map.compiled[n+2];
+            var p4 = map.compiled[n+3];
+
+            var w = Math.abs(p1.moveTo.x - p2.moveTo.x);
+            var h = Math.abs(p3.moveTo.y - p4.moveTo.y);
+
+            /**
+             * GROUND TERRAIN
+             */
+            if (p1.type == map.types.wall || p1.type == map.types.free) {
+                /**
+                 * NEEED CACHE BITMASK BECAUSE IF NOT CACHE
+                 * GET FUCK BEHAVIOR OF CALC getTileBitmask!
+                 *
+                 * @type {string}
+                 */
+                var cacheKey 		 = p1.map_index[0] + '_' + parseInt(p1.map_index[1]);
+                if(cache.bitmask[cacheKey] == undefined) {
+                    var bitMask 		 = getTileBitmask(parseInt(p1.map_index[0]), parseInt(p1.map_index[1]));
+                    cache.bitmask[cacheKey] = bitMask;
+                }
+                else {
+                    var bitMask = cache.bitmask[cacheKey];
+                }
+
+                var groundOffset 	 = getGroundTileOffsetByBitmask(bitMask);
+                var colliderPoints   = getGroundTileColliderByBitmask(p1, p2, p3, p4, bitMask, p1.type);
+
+                ctx.drawImage(tileset, groundOffset.x, groundOffset.y, cell.w, cell.h, p1.moveTo.x, p1.moveTo.y, cell.w, cell.h);
+                if(debugGroundBitmask) {
+                    ctx.fillStyle = 'white';
+                    ctx.font = '14px Arial';
+                    ctx.fillText(bitMask, p1.moveTo.x + 14, p1.moveTo.y + 20);
+                }
+                if(debugColliderPoints && colliderPoints) {
+                    ctx.fillStyle = 'red';
+                    for(var i in colliderPoints) {
+                        var point = colliderPoints[i];
+                        console.log(point);
+                        ctx.beginPath();
+                        ctx.arc(point.moveTo.x, point.moveTo.y, 5, false, Math.PI * 2);
+                        ctx.arc(point.lineTo.x, point.lineTo.y, 5, false, Math.PI * 2);
+                        ctx.fill();
+                    }
+                }
+
+                if(debugColliderLines && colliderPoints) {
+                    ctx.strokeStyle = 'red';
+                    for(var i in colliderPoints) {
+                        var point = colliderPoints[i];
+                        ctx.beginPath();
+                        ctx.moveTo(point.moveTo.x, point.moveTo.y);
+                        ctx.lineTo(point.lineTo.x, point.lineTo.y);
+                        ctx.stroke();
+                    }
+                }
             }
 
-            if(m[h][v+1] == undefined || m[h][v+1] == w) {
-                bitMask += 16;
-            }
-            if(m[h+1] == undefined || m[h+1][v+1] == undefined || m[h+1][v+1] == w) {
-                bitMask += 128;
-            }
+            n += 4;
+        }
+    }
 
-            if(m[h+1] == undefined || m[h+1][v] == undefined || m[h+1][v] == w) {
-                bitMask += 64;
-            }
+    function drawPlayer() {
+        ctx.save();
+        ctx.translate(player.x+player.w/2, player.y + player.h/2);
 
-            if(m[h+1] == undefined || m[h+1][v-1] == undefined || m[h+1][v-1] == w) {
-                bitMask += 32;
-            }
+        ctx.rotate(deg2rad(player.currentAngle));
 
-            if(m[h][v-1]= undefined || m[h][v-1] == w) {
-                bitMask += 8;
-            }
+        ctx.drawImage(
+                tanksSprite,
+                95,
+                0,
+                65,
+                80,
+                -player.w /2,
+                -player.h/2,
+                player.w,
+                player.h
+        );
+        ctx.restore();
+    }
 
-            if(m[h-1] == undefined || m[h-1][v-1] == undefined || m[h-1][v-1] == w) {
-                bitMask += 1;
-            }
+    function render(noDrawPlayer) {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        drawMap();
+        drawMapGrid();
+        if (noDrawPlayer == undefined || !noDrawPlayer) drawPlayer();
+    }
 
-			return bitMask;
-		}
-
-		/**
-		 *
-		 * @param bitMask
-		 * @returns {{x: number, y: number}}
-		 */
-		function getGroundTileOffsetByBitmask(bitMask) {
-			var offsetX = 0;
-			var offsetY = 0;
-			//top corner left
-			if(bitMask == 119) {
-				offsetX = cell.w;
-			}
-			//top wall
-			if(bitMask == 31 || bitMask == 63 || bitMask == 159) {
-				offsetX = cell.w * 3;
-			}
-			//top corner right
-			if(bitMask == 223) {
-				offsetX = cell.w * 2;
-			}
-			//bottom left corner
-			if(bitMask == 242) {
-				offsetY = cell.h;
-			}
-			//bottom right corner
-			if(bitMask == 254) {
-				offsetY = cell.h * 2;
-			}
-			//bottom wall
-			if(bitMask == 249 || bitMask == 248 || bitMask == 252) {
-				offsetY = cell.h * 3;
-			}
-			//right wall
-			if(bitMask == 102 || bitMask == 98 || bitMask == 226) {
-				offsetX = cell.w ;
-				offsetY = cell.h ;
-			}
-			//left wall
-			if(bitMask == 215 || bitMask == 214 || bitMask == 246) {
-				offsetX = cell.w * 2;
-				offsetY = cell.h * 2;
-			}
+    render();
 
 
-			return {x: offsetX, y: offsetY};
-		}
+    document.getElementById('move_forward').addEventListener('click', function() {
+        if(player.dir.y < 0){
+            player.y -= 10;
+        }
+        if(player.dir.x < 0){
+            player.x -= 10;
+        }
+        if(player.dir.y>0){
+            player.y += 10;
+        }
+        if(player.dir.x>0){
+            player.x += 10;
+        }
+        render();
+    });
+
+    document.getElementById('rotate_left').addEventListener('click', function() {
+        render(true);
+
+        player.currentAngle -= player.rangle;
+        if(player.currentAngle <= -360) {
+            player.currentAngle = 0;
+        }
+
+        if(player.currentAngle == 0 || player.currentAngle == -360){
+            player.dir.x = 0;
+            player.dir.y = -1;
+        }
+        if(player.currentAngle == -90){
+            player.dir.x = -1;
+            player.dir.y = 0;
+        }
+        if(player.currentAngle == -180){
+            player.dir.x = 0;
+            player.dir.y = 1;
+        }
+        if(player.currentAngle == -270){
+            player.dir.x = 1;
+            player.dir.y = 0;
+        }
+
+        var pox = player.x;
+        var poy = player.y;
+
+        //player.x = -player.w/2;
+        //player.y = -player.h/2;
+        drawPlayer();
 
 
-		function getGroundTileColliderByBitmask(p1, p2, p3, p4, bitMask, type) {
-			var chx = cell.x;
-			var chy = cell.y;
+        player.x = pox;
+        player.y = poy;
+    });
 
-			//GROUND COLLIDER
-			if(type == map.types.wall) {
-				chx = parseInt(cell.w * (map.collides.wall / 100));
-				chy = parseInt(cell.h * (map.collides.wall / 100));
-			}
+    console.log(map);
+};
 
-			var colliderPoints = [];
-			//top corner left
-			if(bitMask == 119) {
-				colliderPoints.push({
-					moveTo: {x: p1.moveTo.x + chx, y: p1.lineTo.y + chy},
-					lineTo: {x: p1.lineTo.x, y: p1.lineTo.y + chy}
-				});
-				colliderPoints.push({
-					moveTo: {x: p1.moveTo.x + chx, y: p1.moveTo.y + chy},
-					lineTo: {x: p1.moveTo.x + chx, y: p3.lineTo.y}
-				});
-			}
-			//left wall
-			if(bitMask == 102 || bitMask == 98 || bitMask == 226) {
-				colliderPoints.push({
-					moveTo: {x: p1.moveTo.x + chx, y: p1.lineTo.y},
-					lineTo: {x: p1.moveTo.x  + chx, y: p3.lineTo.y}
-				});
-			}
-			//left bottom corner
-			if(bitMask == 242) {
-				colliderPoints.push({
-					moveTo: {x: p1.moveTo.x + chx, y: p1.moveTo.y},
-					lineTo: {x: p1.moveTo.x  + chx, y: p1.moveTo.y + chy}
-				});
-				colliderPoints.push({
-					moveTo: {x: p1.moveTo.x  + chx, y: p1.moveTo.y + chy},
-					lineTo: {x: p1.lineTo.x, y: p1.moveTo.y + chy}
-				});
-			}
-			//top wall
-			if(bitMask == 63 || bitMask == 31 || bitMask == 159) {
-				colliderPoints.push({
-					moveTo: {x: p1.moveTo.x, y: p1.moveTo.y + chy},
-					lineTo: {x: p1.lineTo.x, y: p1.moveTo.y + chy}
-				});
-			}
-			//right top corner
-			if(bitMask == 223) {
-				colliderPoints.push({
-					moveTo: {x: p1.moveTo.x + chx, y: p1.moveTo.y + chy},
-					lineTo: {x: p1.moveTo.x, y: p1.moveTo.y + chy}
-				});
-				colliderPoints.push({
-					moveTo: {x: p1.moveTo.x + chx, y: p1.moveTo.y + chy},
-					lineTo: {x: p1.moveTo.x + chx, y: p3.lineTo.y}
-				});
-			}
-			//right wall
-			if(bitMask == 215 || bitMask == 214 || bitMask == 246) {
-				colliderPoints.push({
-					moveTo: {x: p1.moveTo.x + chx, y: p1.moveTo.y},
-					lineTo: {x: p1.moveTo.x + chx, y: p3.lineTo.y}
-				});
-			}
-			//right bottom corner
-			if(bitMask == 254) {
-				colliderPoints.push({
-					moveTo: {x: p1.moveTo.x + chx, y: p1.moveTo.y + chy},
-					lineTo: {x: p1.moveTo.x  + chx, y: p1.moveTo.y}
-				});
-				colliderPoints.push({
-					moveTo: {x: p1.moveTo.x + chx, y: p1.moveTo.y + chy},
-					lineTo: {x: p1.moveTo.x, y: p1.moveTo.y + chy}
-				});
-			}
-			//bottom wall
-			if(bitMask == 249 || bitMask == 248 || bitMask == 252) {
-				colliderPoints.push({
-					moveTo: {x: p1.moveTo.x, y: p1.moveTo.y + chy},
-					lineTo: {x: p1.lineTo.x , y: p1.moveTo.y + chy}
-				});
-			}
+var countImages = 0;
+var ready = false;
+//RUN!
+tileset.onload = function() {
+    countImages++;
+};
 
-			return colliderPoints;
-		}
+tanksSprite.onload = function() {
+    countImages++;
+};
 
-		function drawMap() {
-
-			var n = 0;
-			while(n < map.compiled.length) {
-				//4 points produce rect
-				var p1 = map.compiled[n];
-				var p2 = map.compiled[n+1];
-				var p3 = map.compiled[n+2];
-				var p4 = map.compiled[n+3];
-
-				var w = Math.abs(p1.moveTo.x - p2.moveTo.x);
-				var h = Math.abs(p3.moveTo.y - p4.moveTo.y);
-
-				/**
-				 * GROUND TERRAIN
-				 */
-				if (p1.type == map.types.wall || p1.type == map.types.free) {
-					/**
-					 * NEEED CACHE BITMASK BECAUSE IF NOT CACHE
-					 * GET FUCK BEHAVIOR OF CALC getTileBitmask!
-					 *
-					 * @type {string}
-					 */
-					var cacheKey 		 = p1.map_index[0] + '_' + parseInt(p1.map_index[1]);
-					if(cache.bitmask[cacheKey] == undefined) {
-						var bitMask 		 = getTileBitmask(parseInt(p1.map_index[0]), parseInt(p1.map_index[1]));
-						cache.bitmask[cacheKey] = bitMask;
-					}
-					else {
-						var bitMask = cache.bitmask[cacheKey];
-					}
-
-					var groundOffset 	 = getGroundTileOffsetByBitmask(bitMask);
-					var colliderPoints   = getGroundTileColliderByBitmask(p1, p2, p3, p4, bitMask, p1.type);
-
-					ctx.drawImage(tileset, groundOffset.x, groundOffset.y, cell.w, cell.h, p1.moveTo.x, p1.moveTo.y, cell.w, cell.h);
-					if(debugGroundBitmask) {
-						ctx.fillStyle = 'white';
-						ctx.font = '14px Arial';
-						ctx.fillText(bitMask, p1.moveTo.x + 14, p1.moveTo.y + 20);
-					}
-					if(debugColliderPoints && colliderPoints) {
-						ctx.fillStyle = 'red';
-						for(var i in colliderPoints) {
-							var point = colliderPoints[i];
-							console.log(point);
-							ctx.beginPath();
-							ctx.arc(point.moveTo.x, point.moveTo.y, 5, false, Math.PI * 2);
-							ctx.arc(point.lineTo.x, point.lineTo.y, 5, false, Math.PI * 2);
-							ctx.fill();
-						}
-					}
-
-					if(debugColliderLines && colliderPoints) {
-						ctx.strokeStyle = 'red';
-						for(var i in colliderPoints) {
-							var point = colliderPoints[i];
-							ctx.beginPath();
-							ctx.moveTo(point.moveTo.x, point.moveTo.y);
-							ctx.lineTo(point.lineTo.x, point.lineTo.y);
-							ctx.stroke();
-						}
-					}
-				}
-
-				n += 4;
-			}
-		}
-
-		function drawPlayer() {
-			ctx.drawImage(
-					tanksSprite,
-					95,
-					0,
-					65,
-					80,
-					player.x,
-					player.y,
-					player.w,
-					player.h
-			);
-			ctx.restore();
-		}
-
-        function render(noDrawPlayer) {
-			ctx.clearRect(0, 0, canvas.width, canvas.height);
-			drawMap();
-			drawMapGrid();
-			if (noDrawPlayer == undefined || !noDrawPlayer) drawPlayer();
-		}
-
-		render();
-
-
-		document.getElementById('move_forward').addEventListener('click', function() {
-			if(player.currentAngle == 90) {
-				player.y -= 10;
-			}
-			else if(player.currentAngle == 270) {
-				player.y += 10;
-			}
-
-			render();
-		});
-
-		document.getElementById('rotate_left').addEventListener('click', function() {
-
-			render(true);
-			//ctx.save();
-			//ctx.translate(player.x, player.y + player.h);
-
-			player.currentAngle -= player.rangle;
-			if(player.currentAngle <= -360) {
-				player.currentAngle = 360;
-			}
-
-			//ctx.rotate(deg2rad(player.currentAngle));
-			//player.x = 0;
-			//player.y = 0;
-			drawPlayer();
-			//ctx.restore();
-
-			//var rp = rotatePoint(player.x, player.y, player.x, player.y  + player.h, deg2rad(player.currentAngle));
-			//console.log(player);
-			//console.log(rp);
-		});
-
-		console.log(map);
-	};
-
-	var countImages = 0;
-	var ready = false;
-	//RUN!
-	tileset.onload = function() {
-		countImages++;
-	};
-
-	tanksSprite.onload = function() {
-		countImages++;
-	};
-
-	var loader = setInterval(function() {
-		console.log('loading...');
-		if(countImages == 2) {
-			main();
-			clearInterval(loader);
-		}
-	}, 100);
+var loader = setInterval(function() {
+    console.log('loading...');
+    if(countImages == 2) {
+        main();
+        clearInterval(loader);
+    }
+}, 100);
 
 </script>
 </body>
