@@ -462,27 +462,23 @@
 		document.getElementById('rotate_left').addEventListener('click', function() {
 
 			render(true);
-			ctx.save();
-			ctx.translate(player.x, player.y + player.h / 2);
+			//ctx.save();
+			//ctx.translate(player.x, player.y + player.h);
 
 			player.currentAngle -= player.rangle;
 			if(player.currentAngle <= -360) {
 				player.currentAngle = 360;
 			}
-			ctx.rotate(deg2rad(player.currentAngle));
-			var pox = player.x;
-			var poy = player.y;
-			var rp = rotatePoint(1, player.h / 2, pox, poy, player.currentAngle);
-			console.log(player);
-			console.log(rp);
-			player.x = 0;
-			player.y = 0;
+
+			//ctx.rotate(deg2rad(player.currentAngle));
+			//player.x = 0;
+			//player.y = 0;
 			drawPlayer();
-			ctx.restore();
+			//ctx.restore();
 
-			player.x = rp.x;
-			player.y = rp.y;
-
+			//var rp = rotatePoint(player.x, player.y, player.x, player.y  + player.h, deg2rad(player.currentAngle));
+			//console.log(player);
+			//console.log(rp);
 		});
 
 		console.log(map);
