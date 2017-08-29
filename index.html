@@ -97,7 +97,9 @@ function main(debugGroundBitmask, debugColliderPoints, debugColliderLines) {
         h: cell.h,
         rangle: 90,
         currentAngle: 0,
-        dir: {x: 0, y: -1}
+        dir: {x: 0, y: -1},
+        currentFrame: 95,
+        maxFrames: 0
     };
     var cache = {
         bitmask: []
@@ -423,18 +425,36 @@ function main(debugGroundBitmask, debugColliderPoints, debugColliderLines) {
         }
     }
 
+    function selectPlayerFrame() {
+        var r = {
+            img_x: player.currentFrame,
+            img_y: 0,
+            sw: 65,
+            sh: 80
+        };
+
+        player.currentFrame += 84;
+        player.maxFrames++;
+        if(player.maxFrames >= 6) {
+            player.currentFrame = 95;
+            player.maxFrames = 0;
+        }
+        return r;
+    }
+
     function drawPlayer() {
         ctx.save();
         ctx.translate(player.x+player.w/2, player.y + player.h/2);
 
         ctx.rotate(deg2rad(player.currentAngle));
 
+        var frameOffset = selectPlayerFrame();
         ctx.drawImage(
                 tanksSprite,
-                95,
-                0,
-                65,
-                80,
+                frameOffset.img_x,
+                frameOffset.img_y,
+                frameOffset.sw,
+                frameOffset.sh,
                 -player.w /2,
                 -player.h/2,
                 player.w,
