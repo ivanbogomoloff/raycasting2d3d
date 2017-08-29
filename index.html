@@ -452,8 +452,7 @@ function main(debugGroundBitmask, debugColliderPoints, debugColliderLines) {
 
     render();
 
-
-    document.getElementById('move_forward').addEventListener('click', function() {
+    function movePlayerForward() {
         if(player.dir.y < 0){
             player.y -= 10;
         }
@@ -467,12 +466,9 @@ function main(debugGroundBitmask, debugColliderPoints, debugColliderLines) {
             player.x += 10;
         }
         render();
-    });
+    }
 
-    document.getElementById('rotate_left').addEventListener('click', function() {
-        render(true);
-
-        player.currentAngle -= player.rangle;
+    function detectPlayerDir() {
         if(player.currentAngle <= -360) {
             player.currentAngle = 0;
         }
@@ -493,6 +489,34 @@ function main(debugGroundBitmask, debugColliderPoints, debugColliderLines) {
             player.dir.x = 1;
             player.dir.y = 0;
         }
+        if(player.currentAngle >= 360) {
+            player.currentAngle = 0;
+        }
+
+        if(player.currentAngle == 0 || player.currentAngle == 360){
+            player.dir.x = 0;
+            player.dir.y = -1;
+        }
+        if(player.currentAngle == 90){
+            player.dir.x = 1;
+            player.dir.y = 0;
+        }
+        if(player.currentAngle == 180){
+            player.dir.x = 0;
+            player.dir.y = 1;
+        }
+        if(player.currentAngle == 270){
+            player.dir.x = -1;
+            player.dir.y = 0;
+        }
+
+    }
+
+    function rotatePlayerLeft() {
+        render(true);
+
+        player.currentAngle -= player.rangle;
+        detectPlayerDir();
 
         var pox = player.x;
         var poy = player.y;
@@ -504,6 +528,45 @@ function main(debugGroundBitmask, debugColliderPoints, debugColliderLines) {
 
         player.x = pox;
         player.y = poy;
+    }
+
+    function rotatePlayerRight() {
+        render(true);
+
+        player.currentAngle += player.rangle;
+        detectPlayerDir();
+
+        var pox = player.x;
+        var poy = player.y;
+
+        //player.x = -player.w/2;
+        //player.y = -player.h/2;
+        drawPlayer();
+
+
+        player.x = pox;
+        player.y = poy;
+    }
+
+    document.getElementById('move_forward').addEventListener('click', function() {
+        movePlayerForward();
+    });
+
+    window.addEventListener('keydown', function (e) {
+       if(e.keyCode == 38) {
+           movePlayerForward();
+       }
+        if(e.keyCode == 37) {
+            rotatePlayerLeft();
+        }
+        if(e.keyCode == 39) {
+            rotatePlayerRight();
+        }
+        console.log(player.currentAngle);
+    });
+
+    document.getElementById('rotate_left').addEventListener('click', function() {
+        rotatePlayerLeft();
     });
 
     console.log(map);
