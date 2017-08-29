@@ -15,6 +15,7 @@
     </style>
 </head>
 <body>
+<script src="math.js"></script>
 <canvas width="512" height="512" id="canvas"></canvas>
 <div style="margin-top: 10px;">
     <button id="tiles_debug" style="margin: 10px;">TILES DEBUG</button>
@@ -99,7 +100,11 @@ function main(debugGroundBitmask, debugColliderPoints, debugColliderLines) {
         currentAngle: 0,
         dir: {x: 0, y: -1},
         currentFrame: 95,
-        maxFrames: 0
+        maxFrames: 0,
+        pov_line: {
+            moveTo: {x: 0, y: 0},
+            lineTo: {x: 0, y: 0}
+        }
     };
     var cache = {
         bitmask: []
@@ -460,7 +465,15 @@ function main(debugGroundBitmask, debugColliderPoints, debugColliderLines) {
                 player.w,
                 player.h
         );
+
         ctx.restore();
+
+        //DRAW POV LINE
+        ctx.strokeStyle = 'yellow';
+        ctx.beginPath();
+        ctx.moveTo(player.pov_line.moveTo.x, player.pov_line.moveTo.y);
+        ctx.lineTo(player.pov_line.lineTo.x, player.pov_line.lineTo.y);
+        ctx.stroke();
     }
 
     function render(noDrawPlayer) {
@@ -472,7 +485,35 @@ function main(debugGroundBitmask, debugColliderPoints, debugColliderLines) {
 
     render();
 
+    function calcPlayerPov() {
+        var rayLen = canvas.width + canvas.height;
+        var pc = {
+            x: parseInt(player.x + player.w / 2),
+            y: parseInt(player.y + player.h / 2)
+        };
+        var to;
+        if(player.dir.y < 0) {
+            to = {x: pc.x, y: -rayLen}
+        }
+        if(player.dir.x < 0) {
+            to = {x: -rayLen, y: pc.y};
+        }
+        if(player.dir.x > 0) {
+            to = {x: rayLen, y: pc.y};
+        }
+        if(player.dir.y > 0) {
+            to = {x: pc.x, y: rayLen};
+        }
+
+        player.pov_line = {
+            moveTo: {x: pc.x, y: pc.y},
+            lineTo: {x: to.x, y: to.y}
+        };
+    }
+
     function movePlayerForward() {
+        calcPlayerPov();
+
         if(player.dir.y < 0){
             player.y -= 10;
         }
@@ -529,6 +570,8 @@ function main(debugGroundBitmask, debugColliderPoints, debugColliderLines) {
             player.dir.x = -1;
             player.dir.y = 0;
         }
+
+        calcPlayerPov();
 
     }
 
