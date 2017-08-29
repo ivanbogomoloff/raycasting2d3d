@@ -19,23 +19,29 @@
 <div style="margin-top: 10px;">
 	<button id="tiles_debug" style="margin: 10px;">TILES DEBUG</button>
 	<button id="collider_debug" style="margin: 10px;">COLLIDER DEBUG</button>
+	<button id="collider_debug_lines" style="margin: 10px;">COLLIDER LINES DEBUG</button>
 
 </div>
 <script type="text/javascript">
-	var isDebugTiles = isDebugCollider = false;
+	var isDebugTiles = isDebugCollider = isDebugColliderLines = false;
 	document.getElementById('tiles_debug').addEventListener('click', function() {
 		isDebugTiles = isDebugTiles ? false : true;
-		main(isDebugTiles, isDebugCollider);
+		main(isDebugTiles, isDebugCollider, isDebugColliderLines);
 	});
 	document.getElementById('collider_debug').addEventListener('click', function() {
 		isDebugCollider = isDebugCollider ? false : true;
-		main(isDebugTiles, isDebugCollider);
+		main(isDebugTiles, isDebugCollider, isDebugColliderLines);
+	});
+	document.getElementById('collider_debug_lines').addEventListener('click', function() {
+		isDebugColliderLines = isDebugColliderLines ? false : true;
+		main(isDebugTiles, isDebugCollider, isDebugColliderLines);
 	});
 
 	var tileset = new Image();
 	tileset.src = '20030921.jpg';
 
-	function main(debugGroundBitmask, debugColliderPoints) {
+	function main(debugGroundBitmask, debugColliderPoints, debugColliderLines) {
+
 		var canvas = document.getElementById('canvas');
 		var ctx = canvas.getContext('2d');
 		var map = {
@@ -60,6 +66,9 @@
 			],
             size: 1,
 			compiled: []
+		};
+		var player = {
+			
 		};
 
 		//@todo x = w, y = h
@@ -229,10 +238,17 @@
 			return {x: offsetX, y: offsetY};
 		}
 
-		function getGroundTileColliderByBitmask(p1, p2, p3, p4, bitMask) {
-			var chx = parseInt(cell.w / 2);
-			var chy = parseInt(cell.h / 2);
-			var pSize = 50;
+
+		function getGroundTileColliderByBitmask(p1, p2, p3, p4, bitMask, type) {
+			var chx = cell.x;
+			var chy = cell.y;
+
+			//GROUND COLLIDER
+			if(type == map.types.wall) {
+				chx = parseInt(cell.w * (map.collides.wall / 100));
+				chy = parseInt(cell.h * (map.collides.wall / 100));
+			}
+
 			var colliderPoints = [];
 			//top corner left
 			if(bitMask == 119) {
@@ -329,7 +345,7 @@
 				if (p1.type == map.types.wall || p1.type == map.types.free) {
 					var bitMask 		 = getTileBitmask(parseInt(p1.map_index[0]), parseInt(p1.map_index[1]));
 					var groundOffset 	 = getGroundTileOffsetByBitmask(bitMask);
-					var colliderPoints   = getGroundTileColliderByBitmask(p1, p2, p3, p4, bitMask);
+					var colliderPoints   = getGroundTileColliderByBitmask(p1, p2, p3, p4, bitMask, p1.type);
 
 					ctx.drawImage(tileset, groundOffset.x, groundOffset.y, cell.w, cell.h, p1.moveTo.x, p1.moveTo.y, cell.w, cell.h);
 					if(debugGroundBitmask) {
@@ -346,6 +362,17 @@
 							ctx.arc(point.moveTo.x, point.moveTo.y, 5, false, Math.PI * 2);
 							ctx.arc(point.lineTo.x, point.lineTo.y, 5, false, Math.PI * 2);
 							ctx.fill();
+						}
+					}
+
+					if(debugColliderLines && colliderPoints) {
+						ctx.strokeStyle = 'red';
+						for(var i in colliderPoints) {
+							var point = colliderPoints[i];
+							ctx.beginPath();
+							ctx.moveTo(point.moveTo.x, point.moveTo.y);
+							ctx.lineTo(point.lineTo.x, point.lineTo.y);
+							ctx.stroke();
 						}
 					}
 				}
