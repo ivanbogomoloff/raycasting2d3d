@@ -104,10 +104,14 @@ function main(debugGroundBitmask, debugColliderPoints, debugColliderLines) {
         pov_line: {
             moveTo: {x: 0, y: 0},
             lineTo: {x: 0, y: 0}
+        },
+        map_pov_collide_point: {
+            x: 0, y: 0, distance: 0
         }
     };
     var cache = {
-        bitmask: []
+        bitmask: [],
+        map_ground_colliders: []
     };
     console.log('cell');
     console.log(cell);
@@ -396,6 +400,8 @@ function main(debugGroundBitmask, debugColliderPoints, debugColliderLines) {
                 var groundOffset 	 = getGroundTileOffsetByBitmask(bitMask);
                 var colliderPoints   = getGroundTileColliderByBitmask(p1, p2, p3, p4, bitMask, p1.type);
 
+                cache.map_ground_colliders[cacheKey] = colliderPoints;
+
                 ctx.drawImage(tileset, groundOffset.x, groundOffset.y, cell.w, cell.h, p1.moveTo.x, p1.moveTo.y, cell.w, cell.h);
                 if(debugGroundBitmask) {
                     ctx.fillStyle = 'white';
@@ -487,21 +493,34 @@ function main(debugGroundBitmask, debugColliderPoints, debugColliderLines) {
 
     function calcPlayerPov() {
         var rayLen = canvas.width + canvas.height;
-        var pc = {
-            x: parseInt(player.x + player.w / 2),
-            y: parseInt(player.y + player.h / 2)
-        };
+        var pc;
         var to;
         if(player.dir.y < 0) {
+            pc = {
+                x: parseInt(player.x + player.w / 2),
+                y: parseInt(player.y)
+            };
             to = {x: pc.x, y: -rayLen}
         }
         if(player.dir.x < 0) {
+            pc = {
+                x: parseInt(player.x),
+                y: parseInt(player.y + player.h / 2)
+            };
             to = {x: -rayLen, y: pc.y};
         }
         if(player.dir.x > 0) {
+            pc = {
+                x: parseInt(player.x + player.w),
+                y: parseInt(player.y + player.h / 2)
+            };
             to = {x: rayLen, y: pc.y};
         }
         if(player.dir.y > 0) {
+            pc = {
+                x: parseInt(player.x + player.w / 2),
+                y: parseInt(player.y + player.h)
+            };
             to = {x: pc.x, y: rayLen};
         }
 
@@ -511,21 +530,66 @@ function main(debugGroundBitmask, debugColliderPoints, debugColliderLines) {
         };
     }
 
+    function calcPlayerToMapCollision() {
+        for(var i in cache.map_ground_colliders) {
+            var colliderPoints = cache.map_ground_colliders[i];
+            for(var n in colliderPoints) {
+                var cp = colliderPoints[n];
+                var p1 = new Point(cp.moveTo.x, cp.moveTo.y);
+                var p2 = new Point(cp.lineTo.x, cp.lineTo.y);
+                var p3 = new Point(player.pov_line.moveTo.x, player.pov_line.moveTo.y);
+                var p4 = new Point(player.pov_line.lineTo.x, player.pov_line.lineTo.y);
+                if (isCrossing(p1,p2,p3,p4)) {
+                    var le = lineEquation(p3, p4);
+                    var wl = lineEquation(p1, p2);
+                    var cross = getCrossingPoint(
+                        wl.A, wl.B, wl.C,
+                        le.A, le.B, le.C
+                    );
+                    var distance = Math.abs(cross.X - p3.X) + Math.abs(cross.Y - p3.Y);
+                    player.map_pov_collide_point = {
+                        x: cross.X,
+                        y: cross.Y,
+                        distance: distance
+                    };
+                }
+
+            }
+        }
+    }
+
     function movePlayerForward() {
         calcPlayerPov();
-
+        console.log(player.map_pov_collide_point.distance);
         if(player.dir.y < 0){
             player.y -= 10;
+            calcPlayerToMapCollision();
+            if(player.map_pov_collide_point.distance <= 10) {
+                player.y += 10;
+            }
         }
         if(player.dir.x < 0){
             player.x -= 10;
+            calcPlayerToMapCollision();
+            if(player.map_pov_collide_point.distance <= 10) {
+                player.x += 10;
+            }
         }
         if(player.dir.y>0){
             player.y += 10;
+            calcPlayerToMapCollision();
+            if(player.map_pov_collide_point.distance <= 10) {
+                player.y -= 10;
+            }
         }
         if(player.dir.x>0){
             player.x += 10;
+            calcPlayerToMapCollision();
+            if(player.map_pov_collide_point.distance <= 10) {
+                player.x -= 10;
+            }
         }
+
         render();
     }
 
@@ -633,6 +697,7 @@ function main(debugGroundBitmask, debugColliderPoints, debugColliderLines) {
     });
 
     console.log(map);
+    console.log(cache);
 };
 
 var countImages = 0;
