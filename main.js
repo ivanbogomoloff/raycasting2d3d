@@ -560,6 +560,20 @@ function main(debugGroundBitmask, debugColliderPoints, debugColliderLines) {
             moveTo: {x: pc.x, y: pc.y},
             lineTo: {x: to.x, y: to.y}
         };
+
+        calcPlayerFov();
+    }
+
+    function calcPlayerFov() {
+        var rp = rotatePoint(
+            player.pov_line.lineTo.x,
+            player.pov_line.lineTo.y,
+            player.pov_line.moveTo.x,
+            player.pov_line.moveTo.y,
+            player.currentAngle - 90
+        );
+
+        console.log(rp);
     }
 
     function calcPlayerToMapCollision() {
