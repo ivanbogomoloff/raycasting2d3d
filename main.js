@@ -85,7 +85,14 @@ function main(debugGroundBitmask, debugColliderPoints, debugColliderLines) {
         map_collider_point: {
             x: 0, y: 0, distance: 0
         },
-        map: {i: 0, j: 0}
+        map: {i: 0, j: 0},
+        fov_line: {
+            x: 0, y: 0
+        },
+        fov_line2: {
+            x: 0, y: 0
+        },
+        fov_rays: []
     };
     var cache = {
         bitmask: [],
@@ -512,6 +519,29 @@ function main(debugGroundBitmask, debugColliderPoints, debugColliderLines) {
             ctx.stroke();
         }
 
+        //DRAW FOV RAYS
+        ctx.strokeStyle = 'blue';
+        for(var i in player.fov_rays) {
+            ctx.beginPath();
+            ctx.moveTo(player.pov_line.moveTo.x, player.pov_line.moveTo.y);
+            ctx.lineTo(player.fov_rays[i].x, player.fov_rays[i].y );
+            ctx.stroke();
+        }
+
+        //DRAW FOV LINES
+        ctx.strokeStyle = 'red';
+        ctx.beginPath();
+        ctx.moveTo(player.pov_line.moveTo.x, player.pov_line.moveTo.y);
+        ctx.lineTo(player.fov_line.x, player.fov_line.y);
+        ctx.stroke();
+
+        ctx.strokeStyle = 'white';
+        ctx.beginPath();
+        ctx.moveTo(player.pov_line.moveTo.x, player.pov_line.moveTo.y);
+        ctx.lineTo(player.fov_line2.x, player.fov_line2.y);
+        ctx.stroke();
+
+
     }
 
     function render(noDrawPlayer) {
@@ -565,15 +595,82 @@ function main(debugGroundBitmask, debugColliderPoints, debugColliderLines) {
     }
 
     function calcPlayerFov() {
+        var angle = 45;
+        var angle2 = angle;
+        if(player.dir.y < 0) {
+            angle = angle * player.dir.y;
+            angle2 = angle2  * player.dir.y * 3;
+        }
+        if(player.dir.x > 0) {
+            angle = -angle;
+        }
+        if(player.dir.y > 0) {
+            angle = -angle * 3;
+            angle2 = -angle2;
+        }
+        if(player.dir.x < 0) {
+            angle2 = -angle2;
+        }
+
         var rp = rotatePoint(
             player.pov_line.lineTo.x,
             player.pov_line.lineTo.y,
             player.pov_line.moveTo.x,
             player.pov_line.moveTo.y,
-            player.currentAngle - 90
+            angle
         );
 
-        console.log(rp);
+        var rp2 = rotatePoint(
+            player.pov_line.lineTo.x,
+            player.pov_line.lineTo.y,
+            player.pov_line.moveTo.x,
+            player.pov_line.moveTo.y,
+            angle2
+        );
+
+        player.fov_line.x = rp.x;
+        player.fov_line.y = rp.y;
+
+        player.fov_line2.x = rp2.x;
+        player.fov_line2.y = rp2.y;
+
+        var fovRays = [];
+        //horizontal (left-rigth) movement
+        if(rp.x == rp2.x) {
+            if(rp.y < rp2.y) {
+                for(var i = rp.y; i < rp2.y; i++) {
+                    fovRays.push({
+                       x: rp.x, y: i
+                    });
+                }
+            }
+            if(rp.y > rp2.y) {
+                for(var i = rp2.y; i < rp.y; i++) {
+                    fovRays.push({
+                        x: rp2.x, y: i
+                    });
+                }
+            }
+        }
+        //vertical movement(forward)
+        if(rp.y == rp2.y) {
+            if(rp.x < rp2.x) {
+                for(var i = rp.x; i < rp2.x; i++) {
+                    fovRays.push({
+                        x: i, y: rp.y
+                    });
+                }
+            }
+            if(rp.x > rp2.x) {
+                for(var i = rp2.x; i < rp.x; i++) {
+                    fovRays.push({
+                        x: i, y: rp2.y
+                    });
+                }
+            }
+        }
+
+        player.fov_rays = fovRays;
     }
 
     function calcPlayerToMapCollision() {
