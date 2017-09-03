@@ -92,7 +92,8 @@ function main(debugGroundBitmask, debugColliderPoints, debugColliderLines) {
         fov_line2: {
             x: 0, y: 0
         },
-        fov_rays: []
+        fov_rays: [],
+        map_fov_collide_points: []
     };
     var cache = {
         bitmask: [],
@@ -520,11 +521,21 @@ function main(debugGroundBitmask, debugColliderPoints, debugColliderLines) {
         }
 
         //DRAW FOV RAYS
+        //ctx.strokeStyle = 'purple';
+        //for(var i in player.fov_rays) {
+        //    ctx.beginPath();
+        //    ctx.moveTo(player.pov_line.moveTo.x, player.pov_line.moveTo.y);
+        //    ctx.lineTo(player.fov_rays[i].x, player.fov_rays[i].y );
+        //    ctx.stroke();
+        //}
+
+        //DRAW COLLIDE FOV LINES
         ctx.strokeStyle = 'blue';
-        for(var i in player.fov_rays) {
+        for(var i in player.map_fov_collide_points) {
+            var pp = player.map_fov_collide_points[i];
             ctx.beginPath();
             ctx.moveTo(player.pov_line.moveTo.x, player.pov_line.moveTo.y);
-            ctx.lineTo(player.fov_rays[i].x, player.fov_rays[i].y );
+            ctx.lineTo(pp.x, pp.y);
             ctx.stroke();
         }
 
@@ -540,6 +551,8 @@ function main(debugGroundBitmask, debugColliderPoints, debugColliderLines) {
         ctx.moveTo(player.pov_line.moveTo.x, player.pov_line.moveTo.y);
         ctx.lineTo(player.fov_line2.x, player.fov_line2.y);
         ctx.stroke();
+
+
 
 
     }
@@ -635,7 +648,7 @@ function main(debugGroundBitmask, debugColliderPoints, debugColliderLines) {
         player.fov_line2.y = rp2.y;
 
         var fovRays = [];
-        var rayStep = 20;
+        var rayStep = 50;
         //horizontal (left-rigth) movement
         if(rp.x == rp2.x) {
             if(rp.y < rp2.y) {
@@ -679,6 +692,7 @@ function main(debugGroundBitmask, debugColliderPoints, debugColliderLines) {
     }
 
     function calcPlayerToMapCollision() {
+        player.map_fov_collide_points = [];
         for(var i in cache.map_ground_colliders) {
             var colliderPoints = cache.map_ground_colliders[i];
             for(var n in colliderPoints) {
@@ -687,9 +701,9 @@ function main(debugGroundBitmask, debugColliderPoints, debugColliderLines) {
                 var p2 = new Point(cp.lineTo.x, cp.lineTo.y);
                 var p3 = new Point(player.pov_line.moveTo.x, player.pov_line.moveTo.y);
                 var p4 = new Point(player.pov_line.lineTo.x, player.pov_line.lineTo.y);
+                var wl = lineEquation(p1, p2);
                 if (isCrossing(p1,p2,p3,p4)) {
                     var le = lineEquation(p3, p4);
-                    var wl = lineEquation(p1, p2);
                     var cross = getCrossingPoint(
                         wl.A, wl.B, wl.C,
                         le.A, le.B, le.C
@@ -701,6 +715,23 @@ function main(debugGroundBitmask, debugColliderPoints, debugColliderLines) {
                         distance: distance
                     });
                 }
+                for(var i in player.fov_rays) {
+                    var fvp = new Point(player.fov_rays[i].x, player.fov_rays[i].y);
+                    if(isCrossing(p1,p2,p3,fvp)) {
+                        var le = lineEquation(p3, fvp);
+                        var cross = getCrossingPoint(
+                            wl.A, wl.B, wl.C,
+                            le.A, le.B, le.C
+                        );
+                        var distance = Math.abs(cross.X - p3.X) + Math.abs(cross.Y - p3.Y);
+                        player.map_fov_collide_points.push({
+                            fov: {x: fvp.X, y: fvp.Y },
+                            x: cross.X,
+                            y: cross.Y,
+                            distance: distance
+                        });
+                    }
+                }
 
             }
         }
@@ -709,14 +740,40 @@ function main(debugGroundBitmask, debugColliderPoints, debugColliderLines) {
             player.map_pov_collide_point.sort(function(a, b) {
                return a.distance - b.distance;
             });
-            console.log(player.map_pov_collide_point);
+
             if(player.map_pov_collide_point) {
                 player.map_collider_point = player.map_pov_collide_point[0];
             }
 
         }
 
-        player.map_pov_collide_point = [];
+        var newCrossingsFov = [];
+        if(player.map_fov_collide_points) {
+            for(var i = 0; i < player.map_fov_collide_points.length; i++) {
+                var crossings = [];
+                var currentFovLine = player.map_fov_collide_points[i];
+                for(var n = i+1; n < player.map_fov_collide_points.length; n++) {
+                    var anotherFovLine = player.map_fov_collide_points[n];
+                    //For equals fov line we have more than one point!
+                    if( anotherFovLine.fov.x == currentFovLine.fov.x
+                        && anotherFovLine.fov.y == currentFovLine.fov.y) {
+                        crossings.push(anotherFovLine);
+                    }
+                }
+                if(crossings && crossings.length > 0) {
+                    crossings.push(currentFovLine);
+                    crossings.sort(function(a, b){
+                        return a.distance - b.distance;
+                    });
+                    console.log(crossings);
+                    newCrossingsFov.push(crossings[0]);
+                }
+            }
+        }
+        player.map_pov_collide_point  = [];
+       // console.log(player.map_fov_collide_points);
+        //console.log(newCrossingsFov);
+        player.map_fov_collide_points = newCrossingsFov;
     }
 
     function movePlayerForward() {
