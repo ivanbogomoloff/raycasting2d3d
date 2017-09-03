@@ -635,6 +635,7 @@ function main(debugGroundBitmask, debugColliderPoints, debugColliderLines) {
         player.fov_line2.y = rp2.y;
 
         var fovRays = [];
+        var rayStep = 20;
         //horizontal (left-rigth) movement
         if(rp.x == rp2.x) {
             if(rp.y < rp2.y) {
@@ -642,6 +643,7 @@ function main(debugGroundBitmask, debugColliderPoints, debugColliderLines) {
                     fovRays.push({
                        x: rp.x, y: i
                     });
+                    i += rayStep;
                 }
             }
             if(rp.y > rp2.y) {
@@ -649,6 +651,7 @@ function main(debugGroundBitmask, debugColliderPoints, debugColliderLines) {
                     fovRays.push({
                         x: rp2.x, y: i
                     });
+                    i += rayStep;
                 }
             }
         }
@@ -659,6 +662,7 @@ function main(debugGroundBitmask, debugColliderPoints, debugColliderLines) {
                     fovRays.push({
                         x: i, y: rp.y
                     });
+                    i += rayStep;
                 }
             }
             if(rp.x > rp2.x) {
@@ -666,6 +670,7 @@ function main(debugGroundBitmask, debugColliderPoints, debugColliderLines) {
                     fovRays.push({
                         x: i, y: rp2.y
                     });
+                    i += rayStep;
                 }
             }
         }
