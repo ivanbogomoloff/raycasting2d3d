@@ -12,11 +12,18 @@
             margin: 10px auto;
             border: 1px solid black;
         }
+        .canvas2 {
+            background: #fff;
+            border: 1px solid green;
+        }
     </style>
 </head>
 <body>
 <script src="math.js"></script>
-<canvas width="512" height="512" id="canvas"></canvas>
+<div class="canvases">
+    <canvas width="512" height="512" id="canvas"></canvas>
+    <canvas width="512" height="512" id="canvas2" style="float: right;margin-right: 15%;" class="canvas2"></canvas>
+</div>
 <div style="margin-top: 10px;">
     <button id="tiles_debug" style="margin: 10px;">TILES DEBUG</button>
     <button id="collider_debug" style="margin: 10px;">COLLIDER DEBUG</button>
@@ -28,5 +35,6 @@
     <button id="rotate_right" style="margin: 10px; padding: 10px;">ROTATE RIGHT</button>
 </div>
 <script type="text/javascript" src="main.js"></script>
+<script type="text/javascript" src="main2.js"></script>
 </body>
 </html>

@@ -25,6 +25,8 @@ document.getElementById('collider_debug_lines').addEventListener('click', functi
     main(isDebugTiles, isDebugCollider, isDebugColliderLines);
 });
 
+var player;
+var map;
 
 var tileset = new Image();
 tileset.src = '20030921.jpg';
@@ -38,7 +40,7 @@ function main(debugGroundBitmask, debugColliderPoints, debugColliderLines) {
 
     var canvas = document.getElementById('canvas');
     var ctx = canvas.getContext('2d');
-    var map = {
+    map = {
         types: {
             wall: 1,
             free: 0,
@@ -552,8 +554,8 @@ function main(debugGroundBitmask, debugColliderPoints, debugColliderLines) {
         ctx.lineTo(player.fov_line2.x, player.fov_line2.y);
         ctx.stroke();
 
-
-
+        initRender3d();
+        render3d();
 
     }
 
@@ -765,7 +767,7 @@ function main(debugGroundBitmask, debugColliderPoints, debugColliderLines) {
                 crossings.push(currentFovLine);
                 for(var n = i+1; n < player.map_fov_collide_points.length; n++) {
                     var anotherFovLine = player.map_fov_collide_points[n];
-                    
+
                     //For equals fov line we have more than one point!
                     if( anotherFovLine.fov.x == currentFovLine.fov.x
                         && anotherFovLine.fov.y == currentFovLine.fov.y) {
