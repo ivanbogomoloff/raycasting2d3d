@@ -750,6 +750,10 @@ function main(debugGroundBitmask, debugColliderPoints, debugColliderLines) {
         var newCrossingsFov = [];
         var passedFovPointDistances = [];
         if(player.map_fov_collide_points) {
+            player.map_fov_collide_points.sort(function(a, b){
+                return a.distance - b.distance;
+            });
+
             for(var i = 0; i < player.map_fov_collide_points.length; i++) {
                 var crossings = [];
                 var currentFovLine = player.map_fov_collide_points[i];
@@ -761,10 +765,7 @@ function main(debugGroundBitmask, debugColliderPoints, debugColliderLines) {
                 crossings.push(currentFovLine);
                 for(var n = i+1; n < player.map_fov_collide_points.length; n++) {
                     var anotherFovLine = player.map_fov_collide_points[n];
-                    //skip processed points from crossings max values
-                    if(passedFovPointDistances.indexOf(anotherFovLine.distance) != -1) {
-                        continue;
-                    }
+                    
                     //For equals fov line we have more than one point!
                     if( anotherFovLine.fov.x == currentFovLine.fov.x
                         && anotherFovLine.fov.y == currentFovLine.fov.y) {
@@ -778,7 +779,7 @@ function main(debugGroundBitmask, debugColliderPoints, debugColliderLines) {
                 });
                 console.log(crossings);
                 newCrossingsFov.push(crossings[0]);
-
+                fvp++;
             }
         }
         player.map_pov_collide_point  = [];
